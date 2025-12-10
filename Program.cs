@@ -2,6 +2,7 @@ using AttendanceSystemBackend.Repositories.Employees;
 using AttendanceSystemBackend.Repositories.Regions;
 using AttendanceSystemBackend.Repositories.Countries;
 using AttendanceSystemBackend.Repositories.UserRoles;
+using AttendanceSystemBackend.Repositories.AttendanceLogs;
 using AttendanceSystemBackend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddScoped<IEmployeesRepo, EmployeesRepo>();
 builder.Services.AddScoped<IRegionsRepo, RegionsRepo>();
 builder.Services.AddScoped<ICountriesRepo, CountriesRepo>();
 builder.Services.AddScoped<IUserRolesRepo, UserRolesRepo>();
+builder.Services.AddScoped<IAttendanceLogsRepo, AttendanceLogsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>
