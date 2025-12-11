@@ -292,3 +292,75 @@ GO
 
 ALTER TABLE [UserAccounts] ADD FOREIGN KEY ([roleId]) REFERENCES [UserRoles] ([id])
 GO
+
+
+
+-- =============================================
+-- 1. (Departments)
+-- =============================================
+INSERT INTO [Departments] ([id], [departmentName]) VALUES 
+('3794CA53-1A31-4D4F-9A73-3FC4865C2CDD', 'Human Resources (HR)'),
+('E9E4F16F-9347-4A7E-A0A3-2E4AFF371780', 'Finance & Accounting'),
+('C55F0103-24B9-4182-AEE3-BD9534268A50', 'Operations'),
+('509C71DD-AA6A-4453-B6B5-4770E15F2829', 'Marketing'),
+('687BD2F9-16DB-4479-B9FD-02D758769AFF', 'Information Technology (IT)');
+
+-- =============================================
+-- 2. (JobTitles)
+-- =============================================
+INSERT INTO [JobTitles] ([id], [titleName], [minSalary], [maxSalary]) VALUES 
+('6FF6FADF-27C8-4EC4-B086-F57BD99D3221', 'Software Engineer', 12000.00, 22000.00),
+('3970BD96-E3E4-4950-AFC6-8ED675D72941', 'HR Manager', 14000.00, 20000.00),
+('07F81CE2-81EC-4EA7-BB2D-60E2733C151E', 'Accountant', 9000.00, 16000.00),
+('176BE9D5-47C8-407F-A564-C574928BEE8D', 'Sales Representative', 6000.00, 12000.00),
+('DDBA1D72-E4DA-4870-9B71-F89464B062C6', 'System Administrator', 15000.00, 25000.00);
+
+-- =============================================
+-- 3. (Admin - Employee)
+-- =============================================
+INSERT INTO [Employees] (
+    [id], 
+    [firstName], 
+    [lastName], 
+    [email], 
+    [phone], 
+    [hireDate], 
+    [startDate], 
+    [shiftId],
+    [endDate], 
+    [departmentId], 
+    [jobId], 
+    [countryId],
+    [isSystemActive]
+) VALUES (
+    '6E94885D-7F4D-4F6D-971E-DFC670A60C1E',
+    'admin', 
+    '', 
+    'admin@company.com', 
+    '+905550000000', 
+    GETDATE(), 
+    GETDATE(), 
+    'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+    NULL, 
+    '687BD2F9-16DB-4479-B9FD-02D758769AFF',
+    'DDBA1D72-E4DA-4870-9B71-F89464B062C6',
+    'a005-tur-005',
+    1
+);
+
+-- =============================================
+-- 4. (User Account)
+-- =============================================
+INSERT INTO [UserAccounts] (
+    [id], 
+    [employeeId], 
+    [username], 
+    [password], 
+    [roleId]
+) VALUES (
+    '6A785FBF-80DB-4D84-B5C2-0C73158A353D',
+    '6E94885D-7F4D-4F6D-971E-DFC670A60C1E',
+    'admin@company.com', 
+    '123456', 
+    'amjifdf2vdfpgm23in2'
+);
