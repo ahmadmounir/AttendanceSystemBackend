@@ -231,11 +231,8 @@ GO
 
 
 
----
+---  2. Foreign Key Constraints
 
-### 2. Foreign Key Constraints
-
-```sql
 ALTER TABLE [Employees] ADD FOREIGN KEY ([departmentId]) REFERENCES [Departments] ([id])
 GO
 
