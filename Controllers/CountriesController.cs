@@ -1,11 +1,13 @@
 using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Repositories.Countries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("countries")]
+    [Authorize]
     public class CountriesController : Controller
     {
         private readonly ICountriesRepo _countriesRepo;

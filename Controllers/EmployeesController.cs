@@ -1,11 +1,13 @@
 ﻿using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Repositories.Employees;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("employees")]
+    [Authorize]
     public class EmployeesController : Controller
     {
         private readonly IEmployeesRepo _employeesRepo;
