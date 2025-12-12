@@ -1,0 +1,277 @@
+using AttendanceSystemBackend.Models;
+using AttendanceSystemBackend.Models.DTOs;
+using AttendanceSystemBackend.Repositories.LeaveRequests;
+using AttendanceSystemBackend.Services.LeaveRequests;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace AttendanceSystemBackend.Controllers
+{
+    [ApiController]
+    [Route("leaverequests")]
+    [Authorize]
+    public class LeaveRequestsController : Controller
+    {
+        private readonly ILeaveRequestsRepo _leaveRequestsRepo;
+        private readonly ILeaveRequestService _leaveRequestService;
+
+        public LeaveRequestsController(
+            ILeaveRequestsRepo leaveRequestsRepo,
+            ILeaveRequestService leaveRequestService)
+        {
+            _leaveRequestsRepo = leaveRequestsRepo;
+            _leaveRequestService = leaveRequestService;
+        }
+
+        // GET /api/v1/leaverequests (Admin only - all requests)
+        [HttpGet]
+        public async Task<IActionResult> GetAllLeaveRequests()
+        {
+            try
+            {
+                var items = await _leaveRequestsRepo.GetAllAsync();
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                    items,
+                    "Leave requests retrieved successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // GET /api/v1/leaverequests/pending (Admin only - pending requests)
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingRequests()
+        {
+            try
+            {
+                var items = await _leaveRequestsRepo.GetPendingRequestsAsync();
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                    items,
+                    "Pending leave requests retrieved successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // GET /api/v1/leaverequests/my (Employee - own requests)
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyLeaveRequests()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<IEnumerable<LeaveRequest>>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var items = await _leaveRequestsRepo.GetEmployeeRequestsAsync(userId);
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                    items,
+                    "Leave requests retrieved successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // GET /api/v1/leaverequests/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetLeaveRequestById([FromRoute] string id)
+        {
+            try
+            {
+                var item = await _leaveRequestsRepo.GetByIdAsync(id);
+                if (item == null)
+                {
+                    var notFoundResponse = ApiResponse<Models.LeaveRequest>.ErrorResponse(
+                        "Leave request not found",
+                        404
+                    );
+                    return NotFound(notFoundResponse);
+                }
+
+                var response = ApiResponse<Models.LeaveRequest>.SuccessResponse(
+                    item,
+                    "Leave request retrieved successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<Models.LeaveRequest>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // POST /api/v1/leaverequests (Employee creates request)
+        [HttpPost]
+        public async Task<IActionResult> CreateLeaveRequest([FromBody] LeaveRequestCreateDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<string>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var newId = await _leaveRequestService.CreateLeaveRequestAsync(userId, dto);
+                var response = ApiResponse<string>.SuccessResponse(
+                    newId,
+                    "Leave request submitted successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<string>.ErrorResponse(
+                    ex.Message,
+                    400
+                );
+                return BadRequest(response);
+            }
+        }
+
+        // PUT /api/v1/leaverequests/{id}/review (Admin approves/rejects)
+        [HttpPut("{id}/review")]
+        public async Task<IActionResult> ReviewLeaveRequest([FromRoute] string id, [FromBody] LeaveRequestReviewDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<bool>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, userId, dto);
+                var message = dto.Status == "Approved" 
+                    ? "Leave request approved successfully" 
+                    : "Leave request rejected successfully";
+
+                var response = ApiResponse<bool>.SuccessResponse(
+                    success,
+                    message
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<bool>.ErrorResponse(
+                    ex.Message,
+                    400
+                );
+                return BadRequest(response);
+            }
+        }
+
+        // DELETE /api/v1/leaverequests/{id} (Only pending requests can be deleted by employee)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLeaveRequest([FromRoute] string id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<int>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var request = await _leaveRequestsRepo.GetByIdAsync(id);
+                if (request == null)
+                {
+                    var notFoundResponse = ApiResponse<int>.ErrorResponse(
+                        "Leave request not found",
+                        404
+                    );
+                    return NotFound(notFoundResponse);
+                }
+
+                if (request.EmployeeId != userId)
+                {
+                    var forbiddenResponse = ApiResponse<int>.ErrorResponse(
+                        "You can only delete your own requests",
+                        403
+                    );
+                    return StatusCode(403, forbiddenResponse);
+                }
+
+                if (request.Status != "Pending")
+                {
+                    var errorResponse = ApiResponse<int>.ErrorResponse(
+                        "Only pending requests can be deleted",
+                        400
+                    );
+                    return BadRequest(errorResponse);
+                }
+
+                var rowsAffected = await _leaveRequestsRepo.DeleteAsync(id);
+                var response = ApiResponse<int>.SuccessResponse(
+                    rowsAffected,
+                    "Leave request deleted successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<int>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+    }
+}

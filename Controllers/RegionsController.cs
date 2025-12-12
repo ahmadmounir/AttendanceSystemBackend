@@ -1,11 +1,13 @@
 using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Repositories.Regions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("regions")]
+    [Authorize]
     public class RegionsController : Controller
     {
         private readonly IRegionsRepo _regionsRepo;
