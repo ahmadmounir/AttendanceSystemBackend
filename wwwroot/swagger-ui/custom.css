@@ -1,0 +1,75 @@
+/* Custom Swagger UI Styling for Attendance System */
+
+/* Admin Portal - Blue Theme */
+.swagger-ui .topbar {
+    background-color: #1976d2;
+}
+
+/* Member Portal - Green Theme */
+body[data-portal="member"] .swagger-ui .topbar {
+    background-color: #388e3c;
+}
+
+/* Role badges */
+.swagger-ui .opblock-tag {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Admin Only endpoints - Red */
+.swagger-ui .opblock.opblock-post,
+.swagger-ui .opblock.opblock-put,
+.swagger-ui .opblock.opblock-delete {
+    border-color: #f44336;
+}
+
+/* Read-only endpoints - Blue */
+.swagger-ui .opblock.opblock-get {
+    border-color: #2196f3;
+}
+
+/* Add role indicators */
+.swagger-ui .opblock-summary-description::after {
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* Improve readability */
+.swagger-ui .opblock-description-wrapper p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Make endpoint paths more visible */
+.swagger-ui .opblock-summary-path {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* Better authorization section */
+.swagger-ui .auth-wrapper {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Response examples */
+.swagger-ui .responses-inner {
+    padding: 20px;
+}
+
+/* Parameter descriptions */
+.swagger-ui .parameter__name {
+    font-weight: 600;
+    color: #1976d2;
+}
+
+/* Required parameters */
+.swagger-ui .parameter__name.required::after {
+    content: " *";
+    color: #f44336;
+}

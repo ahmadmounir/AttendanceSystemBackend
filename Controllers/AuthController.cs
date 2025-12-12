@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
+    /// <summary>
+    /// Authentication endpoints for login, token refresh, and logout
+    /// </summary>
     [ApiController]
     [Route("auth")]
     public class AuthController : Controller
@@ -17,6 +20,39 @@ namespace AttendanceSystemBackend.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// User login - Authenticate with username and password
+        /// </summary>
+        /// <param name="request">Login credentials (username and password)</param>
+        /// <returns>Access token, refresh token (in cookie), user information, and role</returns>
+        /// <response code="200">Login successful - Returns access token and user info</response>
+        /// <response code="401">Invalid credentials - Username or password incorrect</response>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/v1/auth/login
+        ///     {
+        ///         "username": "admin@company.com",
+        ///         "password": "123456"
+        ///     }
+        /// 
+        /// Sample response:
+        /// 
+        ///     {
+        ///         "success": true,
+        ///         "statusCode": 200,
+        ///         "message": "Login successful",
+        ///         "data": {
+        ///             "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        ///             "username": "admin@company.com",
+        ///             "employeeId": "6E94885D-7F4D-4F6D-971E-DFC670A60C1E",
+        ///             "roleName": "admin",
+        ///             "expiresAt": "2025-12-13T10:00:00Z"
+        ///         }
+        ///     }
+        /// 
+        /// The refresh token is automatically stored in an HTTP-only cookie.
+        /// </remarks>
         // POST /api/v1/auth/login
         [HttpPost("login")]
         [AllowAnonymous]

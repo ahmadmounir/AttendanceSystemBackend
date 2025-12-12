@@ -9,5 +9,7 @@ namespace AttendanceSystemBackend.Repositories.Auth
         Task<Models.RefreshToken?> GetRefreshTokenAsync(string token);
         Task<bool> RevokeRefreshTokenAsync(string token);
         Task<bool> RevokeAllUserRefreshTokensAsync(string userId);
+        Task<string?> GetEmployeeIdByUserIdAsync(string userId);
+        Task<string?> GetRoleIdByUserIdAsync(string userId);
     }
 }

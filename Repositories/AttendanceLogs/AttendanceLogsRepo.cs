@@ -30,6 +30,14 @@ namespace AttendanceSystemBackend.Repositories.AttendanceLogs
             return await connection.QueryFirstOrDefaultAsync<Models.AttendanceLog>(sql, parameters);
         }
 
+        public async Task<IEnumerable<Models.AttendanceLog>> GetByEmployeeIdAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT * FROM AttendanceLogs WHERE employeeId = @EmployeeId ORDER BY clockInTime DESC";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.QueryAsync<Models.AttendanceLog>(sql, parameters);
+        }
+
         public async Task<string> AddAsync(Models.AttendanceLog attendanceLog)
         {
             var newId = Guid.NewGuid();

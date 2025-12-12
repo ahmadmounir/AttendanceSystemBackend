@@ -1,18 +1,23 @@
 using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Repositories.AttendanceLogs;
+using AttendanceSystemBackend.Services.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("attendancelogs")]
+    [Authorize]
     public class AttendanceLogsController : Controller
     {
         private readonly IAttendanceLogsRepo _attendanceLogsRepo;
+        private readonly IUserAuthorizationService _authorizationService;
 
-        public AttendanceLogsController(IAttendanceLogsRepo attendanceLogsRepo)
+        public AttendanceLogsController(IAttendanceLogsRepo attendanceLogsRepo, IUserAuthorizationService authorizationService)
         {
             _attendanceLogsRepo = attendanceLogsRepo;
+            _authorizationService = authorizationService;
         }
 
         // GET /api/v1/attendancelogs
@@ -21,20 +26,30 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _attendanceLogsRepo.GetAllAsync();
-                var response = ApiResponse<IEnumerable<Models.AttendanceLog>>.SuccessResponse(
-                    items,
-                    "Attendance logs retrieved successfully"
-                );
-                return Ok(response);
+                IEnumerable<Models.AttendanceLog> items;
+
+                if (await _authorizationService.IsAdminAsync(User))
+                {
+                    items = await _attendanceLogsRepo.GetAllAsync();
+                }
+                else
+                {
+                    var employeeId = await _authorizationService.GetCurrentEmployeeIdAsync(User);
+                    if (string.IsNullOrEmpty(employeeId))
+                    {
+                        return NotFound(ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
+                            "Employee not found", 404));
+                    }
+                    items = await _attendanceLogsRepo.GetByEmployeeIdAsync(employeeId);
+                }
+
+                return Ok(ApiResponse<IEnumerable<Models.AttendanceLog>>.SuccessResponse(
+                    items, "Attendance logs retrieved successfully"));
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
-                    ex.Message,
-                    500
-                );
-                return StatusCode(500, response);
+                return StatusCode(500, ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
+                    ex.Message, 500));
             }
         }
 
@@ -47,72 +62,74 @@ namespace AttendanceSystemBackend.Controllers
                 var item = await _attendanceLogsRepo.GetByIdAsync(id);
                 if (item == null)
                 {
-                    var notFoundResponse = ApiResponse<Models.AttendanceLog>.ErrorResponse(
-                        "Attendance log not found",
-                        404
-                    );
-                    return NotFound(notFoundResponse);
+                    return NotFound(ApiResponse<Models.AttendanceLog>.ErrorResponse(
+                        "Attendance log not found", 404));
                 }
 
-                var response = ApiResponse<Models.AttendanceLog>.SuccessResponse(
-                    item,
-                    "Attendance log retrieved successfully"
-                );
-                return Ok(response);
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateEmployeeAccessAsync(User, item.EmployeeId);
+                if (!isAuthorized)
+                {
+                    return StatusCode(403, ApiResponse<Models.AttendanceLog>.ErrorResponse(
+                        errorMessage ?? "Access denied", 403));
+                }
+
+                return Ok(ApiResponse<Models.AttendanceLog>.SuccessResponse(
+                    item, "Attendance log retrieved successfully"));
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<Models.AttendanceLog>.ErrorResponse(
-                    ex.Message,
-                    500
-                );
-                return StatusCode(500, response);
+                return StatusCode(500, ApiResponse<Models.AttendanceLog>.ErrorResponse(
+                    ex.Message, 500));
             }
         }
 
-        // POST /api/v1/attendancelogs
+        // POST /api/v1/attendancelogs (Admin only)
         [HttpPost]
         public async Task<IActionResult> AddAttendanceLog([FromBody] Models.AttendanceLog attendanceLog)
         {
             try
             {
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<string>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
                 var newId = await _attendanceLogsRepo.AddAsync(attendanceLog);
-                var response = ApiResponse<string>.SuccessResponse(
-                    newId,
-                    "Attendance log added successfully"
-                );
-                return Ok(response);
+                return Ok(ApiResponse<string>.SuccessResponse(
+                    newId, "Attendance log added successfully"));
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<string>.ErrorResponse(
-                    ex.Message,
-                    500
-                );
-                return StatusCode(500, response);
+                return StatusCode(500, ApiResponse<string>.ErrorResponse(
+                    ex.Message, 500));
             }
         }
 
-        // PUT /api/v1/attendancelogs/{id}
+        // PUT /api/v1/attendancelogs/{id} (Admin only)
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAttendanceLog([FromRoute] string id, [FromBody] Models.AttendanceLog attendanceLog)
         {
             try
             {
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<Models.AttendanceLog>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
                 var updated = await _attendanceLogsRepo.UpdateAsync(id, attendanceLog);
-                var response = ApiResponse<Models.AttendanceLog>.SuccessResponse(
-                    updated,
-                    "Attendance log updated successfully"
-                );
-                return Ok(response);
+                return Ok(ApiResponse<Models.AttendanceLog>.SuccessResponse(
+                    updated, "Attendance log updated successfully"));
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<int>.ErrorResponse(
-                    ex.Message,
-                    500
-                );
-                return StatusCode(500, response);
+                return StatusCode(500, ApiResponse<int>.ErrorResponse(
+                    ex.Message, 500));
             }
         }
     }

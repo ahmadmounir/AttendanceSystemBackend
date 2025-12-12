@@ -84,5 +84,21 @@ namespace AttendanceSystemBackend.Repositories.Auth
             var rowsAffected = await connection.ExecuteAsync(sql, parameters);
             return rowsAffected > 0;
         }
+
+        public async Task<string?> GetEmployeeIdByUserIdAsync(string userId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT employeeId FROM UserAccounts WHERE id = @UserId";
+            var parameters = new { UserId = userId };
+            return await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
+        }
+
+        public async Task<string?> GetRoleIdByUserIdAsync(string userId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT roleId FROM UserAccounts WHERE id = @UserId";
+            var parameters = new { UserId = userId };
+            return await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
+        }
     }
 }
