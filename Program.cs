@@ -11,6 +11,10 @@ using AttendanceSystemBackend.Repositories.Notifications;
 using AttendanceSystemBackend.Repositories.LeaveBalances;
 using AttendanceSystemBackend.Repositories.LeaveRequests;
 using AttendanceSystemBackend.Repositories.LeaveTypes;
+using AttendanceSystemBackend.Repositories.Shifts;
+using AttendanceSystemBackend.Repositories.EmployeeShifts;
+using AttendanceSystemBackend.Repositories.ViolationTypes;
+using AttendanceSystemBackend.Repositories.Violations;
 using AttendanceSystemBackend.Services.Auth;
 using AttendanceSystemBackend.Services.LeaveRequests;
 using AttendanceSystemBackend.Middleware;
@@ -65,6 +69,10 @@ builder.Services.AddScoped<ILeaveBalancesRepo, LeaveBalancesRepo>();
 builder.Services.AddScoped<ILeaveRequestsRepo, LeaveRequestsRepo>();
 builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 builder.Services.AddScoped<ILeaveTypesRepo, LeaveTypesRepo>();
+builder.Services.AddScoped<IShiftsRepo, ShiftsRepo>();
+builder.Services.AddScoped<IEmployeeShiftsRepo, EmployeeShiftsRepo>();
+builder.Services.AddScoped<IViolationTypesRepo, ViolationTypesRepo>();
+builder.Services.AddScoped<IViolationsRepo, ViolationsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>

@@ -30,30 +30,22 @@ namespace AttendanceSystemBackend.Repositories.Departments
             return await connection.QueryFirstOrDefaultAsync<Models.Department>(sql, parameters);
         }
 
-        public async Task<string> AddAsync(Models.Department department)
+        public async Task<string> AddAsync(string id, Models.Department department)
         {
-            // 1. Generate the ID
-            var newId = Guid.NewGuid();
-
             using var connection = CreateConnection();
 
-            // 2. The SQL query
-            var sql = @"INSERT INTO Employees (id, departmentName) 
+            var sql = @"INSERT INTO Departments (id, departmentName) 
                 VALUES (@Id, @DepartmentName)";
 
-            // 3. Create the parameters object
             var parameters = new
             {
-                Id = newId,
+                Id = id,
                 DepartmentName = department.DepartmentName,
-                
             };
 
-            // 4. Execute
             await connection.ExecuteAsync(sql, parameters);
 
-            // 5. Return the ID created in step 1
-            return newId.ToString();
+            return id;
         }
         public async Task<int> DeleteAsync(string id)
         {

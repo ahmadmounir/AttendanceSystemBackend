@@ -76,7 +76,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var newId = await _departmentsRepo.AddAsync(department);
+                var newId = Guid.NewGuid().ToString();
+                await _departmentsRepo.AddAsync(newId, department);
                 var response = ApiResponse<string>.SuccessResponse(
                     newId,
                     "Department added successfully"

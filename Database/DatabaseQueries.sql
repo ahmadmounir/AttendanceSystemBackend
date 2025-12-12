@@ -362,3 +362,11 @@ INSERT INTO [LeaveTypes] ([id], [typeName], [isPaid], [maxDaysPerYear]) VALUES
 (NEWID(), 'Paternity Leave', 1, 3),     -- إجازة أبوة (مدفوعة - 3 أيام)
 (NEWID(), 'Marriage Leave', 1, 5),      -- إجازة زواج (مدفوعة - 5 أيام)
 (NEWID(), 'Bereavement Leave', 1, 3);   -- إجازة وفاة (مدفوعة - 3 أيام)
+
+INSERT INTO [ViolationTypes] ([id], [typeName], [description]) VALUES 
+(NEWID(), 'Late Arrival', 'Arriving after the scheduled start time plus the grace period.'),
+(NEWID(), 'Early Departure', 'Leaving the workplace before the official shift end time without permission.'),
+(NEWID(), 'Unexcused Absence', 'Absence from work without prior approval or a valid medical report.'),
+(NEWID(), 'Missed Clock-In/Out', 'Failure to record attendance (check-in or check-out) on the system.'),
+(NEWID(), 'Extended Break', 'Exceeding the allowed duration for lunch or rest breaks.'),
+(NEWID(), 'Policy Violation', 'General violation of company internal policies or code of conduct.');
