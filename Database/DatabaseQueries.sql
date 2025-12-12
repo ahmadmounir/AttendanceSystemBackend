@@ -1,4 +1,4 @@
-CREATE TABLE [Departments] (
+﻿CREATE TABLE [Departments] (
   [id] nvarchar(255) PRIMARY KEY,
   [departmentName] nvarchar(255) UNIQUE NOT NULL
 )
@@ -195,14 +195,6 @@ CREATE TABLE [LeaveBalances] (
 )
 GO
 
-CREATE TABLE [DocumentAttachments] (
-  [id] nvarchar(255) PRIMARY KEY,
-  [leaveRequestId] nvarchar(255),
-  [filePath] nvarchar(255) NOT NULL,
-  [uploadedAt] datetime NOT NULL
-)
-GO
-
 CREATE TABLE [ViolationTypes] (
   [id] nvarchar(255) PRIMARY KEY,
   [typeName] nvarchar(255) UNIQUE NOT NULL,
@@ -276,9 +268,6 @@ ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees
 GO
 
 ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([leaveTypeId]) REFERENCES [LeaveTypes] ([id])
-GO
-
-ALTER TABLE [DocumentAttachments] ADD FOREIGN KEY ([leaveRequestId]) REFERENCES [LeaveRequests] ([id])
 GO
 
 ALTER TABLE [Violations] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
@@ -364,3 +353,12 @@ INSERT INTO [UserAccounts] (
     '123456', 
     'amjifdf2vdfpgm23in2'
 );
+
+INSERT INTO [LeaveTypes] ([id], [typeName], [isPaid], [maxDaysPerYear]) VALUES 
+(NEWID(), 'Annual Leave', 1, 21),       -- إجازة سنوية (مدفوعة - 21 يوم)
+(NEWID(), 'Sick Leave', 1, 14),         -- إجازة مرضية (مدفوعة - 14 يوم)
+(NEWID(), 'Unpaid Leave', 0, 30),       -- إجازة بدون راتب (غير مدفوعة - 30 يوم)
+(NEWID(), 'Maternity Leave', 1, 90),    -- إجازة أمومة (مدفوعة - 90 يوم)
+(NEWID(), 'Paternity Leave', 1, 3),     -- إجازة أبوة (مدفوعة - 3 أيام)
+(NEWID(), 'Marriage Leave', 1, 5),      -- إجازة زواج (مدفوعة - 5 أيام)
+(NEWID(), 'Bereavement Leave', 1, 3);   -- إجازة وفاة (مدفوعة - 3 أيام)

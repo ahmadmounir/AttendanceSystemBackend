@@ -286,6 +286,13 @@ All endpoints are prefixed with `/api/v1`
 | GET | `/api/v1/userroles` | Get all user roles | 🔒 |
 | GET | `/api/v1/userroles/{id}` | Get user role by ID | 🔒 |
 
+### Leave Types (Read-Only)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/v1/leavetypes` | Get all leave types | 🔒 |
+| GET | `/api/v1/leavetypes/{id}` | Get leave type by ID | 🔒 |
+
 ### Employees
 
 | Method | Endpoint | Description | Auth |
