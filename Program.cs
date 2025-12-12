@@ -3,6 +3,9 @@ using AttendanceSystemBackend.Repositories.Regions;
 using AttendanceSystemBackend.Repositories.Countries;
 using AttendanceSystemBackend.Repositories.UserRoles;
 
+using AttendanceSystemBackend.Repositories.OvertimeRequests;
+using AttendanceSystemBackend.Repositories.AttendanceLogs;
+using AttendanceSystemBackend.Repositories.JobTitles;
 using AttendanceSystemBackend.Repositories.Departments;
 
 using AttendanceSystemBackend.Repositories.Auth;
@@ -58,7 +61,10 @@ builder.Services.AddScoped<IEmployeesRepo, EmployeesRepo>();
 builder.Services.AddScoped<IRegionsRepo, RegionsRepo>();
 builder.Services.AddScoped<ICountriesRepo, CountriesRepo>();
 builder.Services.AddScoped<IUserRolesRepo, UserRolesRepo>();
+builder.Services.AddScoped<IOvertimeRequestsRepo, OvertimeRequestsRepo>();
 
+builder.Services.AddScoped<IAttendanceLogsRepo, AttendanceLogsRepo>();
+builder.Services.AddScoped<IJobTitlesRepo, JobTitlesRepo>();
 builder.Services.AddScoped<IDepartmentsRepo, DepartmentsRepo>();
 
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
