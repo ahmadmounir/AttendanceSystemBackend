@@ -1,11 +1,13 @@
 using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Repositories.UserRoles;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("userroles")]
+    [Authorize]
     public class UserRolesController : Controller
     {
         private readonly IUserRolesRepo _userRolesRepo;
