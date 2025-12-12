@@ -2,11 +2,14 @@ using AttendanceSystemBackend.Repositories.Employees;
 using AttendanceSystemBackend.Repositories.Regions;
 using AttendanceSystemBackend.Repositories.Countries;
 using AttendanceSystemBackend.Repositories.UserRoles;
+
+using AttendanceSystemBackend.Repositories.LeaveRequests;
 using AttendanceSystemBackend.Repositories.LeaveBalances;
 using AttendanceSystemBackend.Repositories.Auth;
 using AttendanceSystemBackend.Repositories.AuditLogs;
 using AttendanceSystemBackend.Services.Auth;
 using AttendanceSystemBackend.Middleware;
+
 using AttendanceSystemBackend.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -46,11 +49,14 @@ builder.Services.AddScoped<IEmployeesRepo, EmployeesRepo>();
 builder.Services.AddScoped<IRegionsRepo, RegionsRepo>();
 builder.Services.AddScoped<ICountriesRepo, CountriesRepo>();
 builder.Services.AddScoped<IUserRolesRepo, UserRolesRepo>();
+
+builder.Services.AddScoped<ILeaveRequestsRepo, LeaveRequestsRepo>();
 builder.Services.AddScoped<ILeaveBalancesRepo, LeaveBalancesRepo>();
 
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuditLogsRepo, AuditLogsRepo>();
+
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>
