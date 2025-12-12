@@ -2,8 +2,18 @@ using AttendanceSystemBackend.Repositories.Employees;
 using AttendanceSystemBackend.Repositories.Regions;
 using AttendanceSystemBackend.Repositories.Countries;
 using AttendanceSystemBackend.Repositories.UserRoles;
+
 using AttendanceSystemBackend.Repositories.LeaveRequests;
+using AttendanceSystemBackend.Repositories.LeaveBalances;
+using AttendanceSystemBackend.Repositories.Auth;
+using AttendanceSystemBackend.Repositories.AuditLogs;
+using AttendanceSystemBackend.Services.Auth;
+using AttendanceSystemBackend.Middleware;
+
 using AttendanceSystemBackend.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +23,40 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.ListenLocalhost(5079);
 });
 
+// Add JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 // Add services to the container.
 builder.Services.AddScoped<IEmployeesRepo, EmployeesRepo>();
 builder.Services.AddScoped<IRegionsRepo, RegionsRepo>();
 builder.Services.AddScoped<ICountriesRepo, CountriesRepo>();
 builder.Services.AddScoped<IUserRolesRepo, UserRolesRepo>();
+
 builder.Services.AddScoped<ILeaveRequestsRepo, LeaveRequestsRepo>();
+builder.Services.AddScoped<ILeaveBalancesRepo, LeaveBalancesRepo>();
+
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuditLogsRepo, AuditLogsRepo>();
+
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>
@@ -59,7 +97,12 @@ app.UseHttpsRedirection();
 // Enable CORS
 app.UseCors();
 
+// Enable Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
+
+// Enable Audit Logging Middleware (after authentication)
+app.UseMiddleware<AuditLoggingMiddleware>();
 
 app.MapControllers();
 
