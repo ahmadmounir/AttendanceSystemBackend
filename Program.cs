@@ -25,8 +25,13 @@ using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.Text;
 using AttendanceSystemBackend.Repositories.JobTitles;
+using Dapper;
+using AttendanceSystemBackend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Dapper handler to map SQL `time` (TimeSpan) to .NET `TimeOnly`
+SqlMapper.AddTypeHandler(new DapperTimeOnlyTypeHandler());
 
 // Configure to always use port 5079
 builder.WebHost.ConfigureKestrel(serverOptions =>
