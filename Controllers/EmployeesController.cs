@@ -1,5 +1,7 @@
 ﻿using AttendanceSystemBackend.Models;
+using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.Employees;
+using AttendanceSystemBackend.Repositories.Auth;
 using AttendanceSystemBackend.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +14,13 @@ namespace AttendanceSystemBackend.Controllers
     public class EmployeesController : Controller
     {
         private readonly IEmployeesRepo _employeesRepo;
+        private readonly IAuthRepo _authRepo;
         private readonly IUserAuthorizationService _authorizationService;
 
-        public EmployeesController(IEmployeesRepo employeesRepo, IUserAuthorizationService authorizationService)
+        public EmployeesController(IEmployeesRepo employeesRepo, IAuthRepo authRepo, IUserAuthorizationService authorizationService)
         {
             _employeesRepo = employeesRepo;
+            _authRepo = authRepo;
             _authorizationService = authorizationService;
         }
 
@@ -39,7 +43,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // POST /api/v1/employees (Admin only)
         [HttpPost]
-        public async Task<IActionResult> AddEmployee([FromBody] Models.Employees employee)
+        public async Task<IActionResult> AddEmployee([FromBody] CreateEmployeeWithAccountDto dto)
         {
             try
             {
@@ -51,9 +55,37 @@ namespace AttendanceSystemBackend.Controllers
                         errorMessage ?? "Access denied", statusCode));
                 }
 
-                var newId = await _employeesRepo.AddAsync(employee);
+                var employee = new Models.Employees
+                {
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    Email = dto.Email,
+                    Phone = dto.Phone,
+                    HireDate = dto.HireDate,
+                    StartDate = dto.StartDate,
+                    EndDate = dto.EndDate,
+                    ShiftId = dto.ShiftId,
+                    DepartmentId = dto.DepartmentId,
+                    JobId = dto.JobId,
+                    CountryId = dto.CountryId,
+                    IsSystemActive = dto.IsSystemActive
+                };
+
+                var employeeId = await _employeesRepo.AddAsync(employee);
+
+                var userAccount = new Models.UserAccount
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    EmployeeId = employeeId,
+                    Username = dto.Username,
+                    Password = dto.Password,
+                    RoleId = dto.RoleId
+                };
+
+                await _authRepo.CreateUserAccountAsync(userAccount);
+
                 return Ok(ApiResponse<string>.SuccessResponse(
-                    newId, "Employee added successfully"));
+                    employeeId, "Employee added successfully"));
             }
             catch (Exception ex)
             {

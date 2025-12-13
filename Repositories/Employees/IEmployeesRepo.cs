@@ -1,9 +1,10 @@
-﻿
-namespace AttendanceSystemBackend.Repositories.Employees
+﻿namespace AttendanceSystemBackend.Repositories.Employees
 {
     public interface IEmployeesRepo
     {
         Task<IEnumerable<Models.Employees>> GetAllAsync();
+
+        Task<Models.Employees?> GetByIdAsync(string id);
 
         Task<string> AddAsync(Models.Employees employee);
 

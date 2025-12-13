@@ -31,6 +31,7 @@ namespace AttendanceSystemBackend.Services.Auth
             await _authRepo.RevokeAllUserRefreshTokensAsync(user.Id);
 
             var roleName = await _authRepo.GetRoleNameByIdAsync(user.RoleId);
+            var employeeName = await _authRepo.GetEmployeeNameByIdAsync(user.EmployeeId);
 
             var accessToken = GenerateAccessToken(user.Id, user.Username, user.RoleId);
             var refreshToken = GenerateRefreshToken();
@@ -52,8 +53,8 @@ namespace AttendanceSystemBackend.Services.Auth
             {
                 AccessToken = accessToken,
                 Username = user.Username,
-                EmployeeId = user.EmployeeId,
-                RoleName = roleName ?? "Unknown",
+                Name = employeeName ?? "Unknown",
+                Role = roleName ?? "Unknown",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60"))
             };
 
@@ -78,6 +79,7 @@ namespace AttendanceSystemBackend.Services.Auth
             await _authRepo.RevokeRefreshTokenAsync(refreshToken);
 
             var roleName = await _authRepo.GetRoleNameByIdAsync(user.RoleId);
+            var employeeName = await _authRepo.GetEmployeeNameByIdAsync(user.EmployeeId);
 
             var newAccessToken = GenerateAccessToken(user.Id, user.Username, user.RoleId);
             var newRefreshToken = GenerateRefreshToken();
@@ -99,8 +101,8 @@ namespace AttendanceSystemBackend.Services.Auth
             {
                 AccessToken = newAccessToken,
                 Username = user.Username,
-                EmployeeId = user.EmployeeId,
-                RoleName = roleName ?? "Unknown",
+                Name = employeeName ?? "Unknown",
+                Role = roleName ?? "Unknown",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60"))
             };
 

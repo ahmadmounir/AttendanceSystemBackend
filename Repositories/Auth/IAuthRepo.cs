@@ -11,5 +11,7 @@ namespace AttendanceSystemBackend.Repositories.Auth
         Task<bool> RevokeAllUserRefreshTokensAsync(string userId);
         Task<string?> GetEmployeeIdByUserIdAsync(string userId);
         Task<string?> GetRoleIdByUserIdAsync(string userId);
+        Task<string> CreateUserAccountAsync(Models.UserAccount userAccount);
+        Task<string?> GetEmployeeNameByIdAsync(string employeeId);
     }
 }

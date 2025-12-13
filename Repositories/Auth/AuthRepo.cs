@@ -100,5 +100,32 @@ namespace AttendanceSystemBackend.Repositories.Auth
             var parameters = new { UserId = userId };
             return await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
         }
+
+        public async Task<string> CreateUserAccountAsync(Models.UserAccount userAccount)
+        {
+            using var connection = CreateConnection();
+            var sql = @"INSERT INTO UserAccounts (id, employeeId, username, password, roleId) 
+                        VALUES (@Id, @EmployeeId, @Username, @Password, @RoleId)";
+            
+            var parameters = new
+            {
+                Id = userAccount.Id,
+                EmployeeId = userAccount.EmployeeId,
+                Username = userAccount.Username,
+                Password = userAccount.Password,
+                RoleId = userAccount.RoleId
+            };
+
+            await connection.ExecuteAsync(sql, parameters);
+            return userAccount.Id;
+        }
+
+        public async Task<string?> GetEmployeeNameByIdAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT CONCAT(firstName, ' ', lastName) FROM Employees WHERE id = @EmployeeId";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
+        }
     }
 }

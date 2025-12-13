@@ -45,8 +45,8 @@ namespace AttendanceSystemBackend.Controllers
         ///         "data": {
         ///             "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
         ///             "username": "admin@company.com",
-        ///             "employeeId": "6E94885D-7F4D-4F6D-971E-DFC670A60C1E",
-        ///             "roleName": "admin",
+        ///             "name": "John Doe",
+        ///             "role": "Administrator",
         ///             "expiresAt": "2025-12-13T10:00:00Z"
         ///         }
         ///     }

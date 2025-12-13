@@ -26,6 +26,14 @@ namespace AttendanceSystemBackend.Repositories.Employees
             return await connection.QueryAsync<Models.Employees>(sql);
         }
 
+        public async Task<Models.Employees?> GetByIdAsync(string id)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT * FROM Employees WHERE id = @Id";
+            var parameters = new { Id = id };
+            return await connection.QueryFirstOrDefaultAsync<Models.Employees>(sql, parameters);
+        }
+
         public async Task<string> AddAsync(Models.Employees employee)
         {
             // 1. Generate the ID
