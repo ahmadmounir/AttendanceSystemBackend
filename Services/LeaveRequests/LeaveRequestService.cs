@@ -2,7 +2,6 @@ using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.LeaveRequests;
 using AttendanceSystemBackend.Repositories.LeaveBalances;
-using AttendanceSystemBackend.Repositories.Notifications;
 using AttendanceSystemBackend.Repositories.Auth;
 
 namespace AttendanceSystemBackend.Services.LeaveRequests
@@ -11,18 +10,15 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
     {
         private readonly ILeaveRequestsRepo _leaveRequestsRepo;
         private readonly ILeaveBalancesRepo _leaveBalancesRepo;
-        private readonly INotificationsRepo _notificationsRepo;
         private readonly IAuthRepo _authRepo;
 
         public LeaveRequestService(
             ILeaveRequestsRepo leaveRequestsRepo,
             ILeaveBalancesRepo leaveBalancesRepo,
-            INotificationsRepo notificationsRepo,
             IAuthRepo authRepo)
         {
             _leaveRequestsRepo = leaveRequestsRepo;
             _leaveBalancesRepo = leaveBalancesRepo;
-            _notificationsRepo = notificationsRepo;
             _authRepo = authRepo;
         }
 
@@ -103,34 +99,6 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
                     throw new Exception("Failed to deduct leave balance. Insufficient balance or balance not found.");
                 }
             }
-
-            var user = await _authRepo.GetUserByIdAsync(reviewedBy);
-            var reviewerName = user?.Username ?? "Admin";
-            
-            var notificationMessage = dto.Status == "Approved"
-                ? $"Your leave request from {request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd} has been approved by {reviewerName}"
-                : $"Your leave request from {request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd} has been rejected by {reviewerName}";
-
-            if (!string.IsNullOrEmpty(dto.ReviewNotes))
-            {
-                notificationMessage += $". Note: {dto.ReviewNotes}";
-            }
-
-            var userAccount = await _authRepo.GetUserByIdAsync(request.EmployeeId);
-            if (userAccount != null)
-            {
-                var notification = new Notification
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = userAccount.Id,
-                    Message = notificationMessage,
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _notificationsRepo.CreateNotificationAsync(notification);
-            }
-
             return true;
         }
     }
