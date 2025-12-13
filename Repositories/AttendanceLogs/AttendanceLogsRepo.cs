@@ -54,8 +54,6 @@ namespace AttendanceSystemBackend.Repositories.AttendanceLogs
                 ClockInTime = attendanceLog.ClockInTime,
                 ClockOutTime = attendanceLog.ClockOutTime,
                 TotalHours = attendanceLog.TotalHours,
-                DoorLocation = attendanceLog.DoorLocation,
-                ExceptionType = attendanceLog.ExceptionType
             };
 
             await connection.ExecuteAsync(sql, parameters);
@@ -81,8 +79,6 @@ namespace AttendanceSystemBackend.Repositories.AttendanceLogs
                 ClockInTime = attendanceLog.ClockInTime,
                 ClockOutTime = attendanceLog.ClockOutTime,
                 TotalHours = attendanceLog.TotalHours,
-                DoorLocation = attendanceLog.DoorLocation,
-                ExceptionType = attendanceLog.ExceptionType
             };
 
             await connection.ExecuteAsync(sql, parameters);

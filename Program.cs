@@ -5,15 +5,13 @@ using AttendanceSystemBackend.Repositories.UserRoles;
 using AttendanceSystemBackend.Repositories.Departments;
 using AttendanceSystemBackend.Repositories.Auth;
 using AttendanceSystemBackend.Repositories.AuditLogs;
-using AttendanceSystemBackend.Repositories.Notifications;
 using AttendanceSystemBackend.Repositories.LeaveBalances;
 using AttendanceSystemBackend.Repositories.LeaveRequests;
 using AttendanceSystemBackend.Repositories.LeaveTypes;
 using AttendanceSystemBackend.Repositories.Shifts;
 using AttendanceSystemBackend.Repositories.EmployeeShifts;
-using AttendanceSystemBackend.Repositories.ViolationTypes;
-using AttendanceSystemBackend.Repositories.Violations;
 using AttendanceSystemBackend.Repositories.OvertimeRequests;
+using AttendanceSystemBackend.Repositories.JobTitles;
 using AttendanceSystemBackend.Services.Auth;
 using AttendanceSystemBackend.Services.LeaveRequests;
 using AttendanceSystemBackend.Services.Authorization;
@@ -24,9 +22,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.Text;
-using AttendanceSystemBackend.Repositories.JobTitles;
+using Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Dapper TimeOnly type handler
+SqlMapper.AddTypeHandler(new DapperTimeOnlyTypeHandler());
 
 // Configure to always use port 5079
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -66,15 +67,12 @@ builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
 builder.Services.AddScoped<IAuditLogsRepo, AuditLogsRepo>();
-builder.Services.AddScoped<INotificationsRepo, NotificationsRepo>();
 builder.Services.AddScoped<ILeaveBalancesRepo, LeaveBalancesRepo>();
 builder.Services.AddScoped<ILeaveRequestsRepo, LeaveRequestsRepo>();
 builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 builder.Services.AddScoped<ILeaveTypesRepo, LeaveTypesRepo>();
 builder.Services.AddScoped<IShiftsRepo, ShiftsRepo>();
 builder.Services.AddScoped<IEmployeeShiftsRepo, EmployeeShiftsRepo>();
-builder.Services.AddScoped<IViolationTypesRepo, ViolationTypesRepo>();
-builder.Services.AddScoped<IViolationsRepo, ViolationsRepo>();
 builder.Services.AddScoped<IOvertimeRequestsRepo, OvertimeRequestsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
