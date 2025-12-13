@@ -7,7 +7,7 @@ namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("shifts")]
-    [Authorize]
+    [AllowAnonymous]
     public class ShiftsController : Controller
     {
         private readonly IShiftsRepo _shiftsRepo;

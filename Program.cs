@@ -30,8 +30,9 @@ using AttendanceSystemBackend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Dapper handler to map SQL `time` (TimeSpan) to .NET `TimeOnly`
+// Register Dapper handlers to map SQL `time` (TimeSpan) to .NET `TimeOnly` / `TimeOnly?`
 SqlMapper.AddTypeHandler(new DapperTimeOnlyTypeHandler());
+SqlMapper.AddTypeHandler(typeof(TimeOnly?), new DapperNullableTimeOnlyTypeHandler());
 
 // Configure to always use port 5079
 builder.WebHost.ConfigureKestrel(serverOptions =>
