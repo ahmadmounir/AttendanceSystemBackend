@@ -22,11 +22,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.Text;
+
 using Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Dapper TimeOnly type handler
+// Register Dapper handler to map SQL `time` (TimeSpan) to .NET `TimeOnly`
 SqlMapper.AddTypeHandler(new DapperTimeOnlyTypeHandler());
 
 // Configure to always use port 5079
