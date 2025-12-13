@@ -26,25 +26,23 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                IEnumerable<Models.AttendanceLog> items;
-
                 if (await _authorizationService.IsAdminAsync(User))
                 {
-                    items = await _attendanceLogsRepo.GetAllAsync();
-                }
-                else
-                {
-                    var employeeId = await _authorizationService.GetCurrentEmployeeIdAsync(User);
-                    if (string.IsNullOrEmpty(employeeId))
-                    {
-                        return NotFound(ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
-                            "Employee not found", 404));
-                    }
-                    items = await _attendanceLogsRepo.GetByEmployeeIdAsync(employeeId);
+                    var items = await _attendanceLogsRepo.GetAllWithEmployeeAsync();
+                    return Ok(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.SuccessResponse(
+                        items, "Attendance logs retrieved successfully"));
                 }
 
-                return Ok(ApiResponse<IEnumerable<Models.AttendanceLog>>.SuccessResponse(
-                    items, "Attendance logs retrieved successfully"));
+                var employeeId = await _authorizationService.GetCurrentEmployeeIdAsync(User);
+                if (string.IsNullOrEmpty(employeeId))
+                {
+                    return NotFound(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.ErrorResponse(
+                        "Employee not found", 404));
+                }
+
+                var userItems = await _attendanceLogsRepo.GetByEmployeeIdWithEmployeeAsync(employeeId);
+                return Ok(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.SuccessResponse(
+                    userItems, "Attendance logs retrieved successfully"));
             }
             catch (Exception ex)
             {
