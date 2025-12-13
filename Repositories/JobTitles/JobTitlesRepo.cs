@@ -25,12 +25,12 @@ namespace AttendanceSystemBackend.Repositories.JobTitles
         public async Task<Models.JobTitle?> GetByIdAsync(string id)
         {
             using var connection = CreateConnection();
-            var sql = "SELECT * FROM jobTitle WHERE id = @Id";
+            var sql = "SELECT * FROM jobTitles WHERE id = @Id";
             var parameters = new { Id = id };
             return await connection.QueryFirstOrDefaultAsync<Models.JobTitle>(sql, parameters);
         }
 
-        public async Task<string> AddAsync(Models.JobTitle jobTitle)
+        public async Task<string> AddAsync(string titleName, float minSalary, float maxSalary)
         {
             var newId = Guid.NewGuid();
 
@@ -42,16 +42,16 @@ namespace AttendanceSystemBackend.Repositories.JobTitles
             var parameters = new
             {
                 Id = newId,
-                TitleName = jobTitle.TitleName,
-                MinSalary = jobTitle.MinSalary,
-                MaxSalary = jobTitle.MaxSalary
+                TitleName = titleName,
+                MinSalary = minSalary,
+                MaxSalary = maxSalary
             };
 
             await connection.ExecuteAsync(sql, parameters);
             return newId.ToString();
         }
 
-        public async Task<Models.JobTitle> UpdateAsync(string id, Models.JobTitle jobTitle)
+        public async Task<Models.JobTitle> UpdateAsync(string id, string titleName, float minSalary, float maxSalary)
         {
             using var connection = CreateConnection();
             var sql = @"UPDATE jobTitles SET 
@@ -63,13 +63,20 @@ namespace AttendanceSystemBackend.Repositories.JobTitles
             var parameters = new
             {
                 Id = id,
-                TitleName = jobTitle.TitleName,
-                MinSalary = jobTitle.MinSalary,
-                MaxSalary = jobTitle.MaxSalary
+                TitleName = titleName,
+                MinSalary = minSalary,
+                MaxSalary = maxSalary
             };
 
             await connection.ExecuteAsync(sql, parameters);
-            return jobTitle;
+            
+            return new Models.JobTitle
+            {
+                Id = id,
+                TitleName = titleName,
+                MinSalary = minSalary,
+                MaxSalary = maxSalary
+            };
         }
 
         public async Task<int> DeleteAsync(string id)

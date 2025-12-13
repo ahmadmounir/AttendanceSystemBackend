@@ -13,6 +13,7 @@ using AttendanceSystemBackend.Repositories.Shifts;
 using AttendanceSystemBackend.Repositories.EmployeeShifts;
 using AttendanceSystemBackend.Repositories.ViolationTypes;
 using AttendanceSystemBackend.Repositories.Violations;
+using AttendanceSystemBackend.Repositories.OvertimeRequests;
 using AttendanceSystemBackend.Services.Auth;
 using AttendanceSystemBackend.Services.LeaveRequests;
 using AttendanceSystemBackend.Services.Authorization;
@@ -23,6 +24,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.Text;
+using AttendanceSystemBackend.Repositories.JobTitles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,7 @@ builder.Services.AddScoped<IRegionsRepo, RegionsRepo>();
 builder.Services.AddScoped<ICountriesRepo, CountriesRepo>();
 builder.Services.AddScoped<IUserRolesRepo, UserRolesRepo>();
 builder.Services.AddScoped<IDepartmentsRepo, DepartmentsRepo>();
+builder.Services.AddScoped<IJobTitlesRepo, JobTitlesRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
@@ -72,6 +75,7 @@ builder.Services.AddScoped<IShiftsRepo, ShiftsRepo>();
 builder.Services.AddScoped<IEmployeeShiftsRepo, EmployeeShiftsRepo>();
 builder.Services.AddScoped<IViolationTypesRepo, ViolationTypesRepo>();
 builder.Services.AddScoped<IViolationsRepo, ViolationsRepo>();
+builder.Services.AddScoped<IOvertimeRequestsRepo, OvertimeRequestsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>

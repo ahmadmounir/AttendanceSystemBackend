@@ -13,5 +13,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
         Task<int> UpdateApprovalStatusAsync(string id, string status);
 
         Task<int> DeleteAsync(string id);
+
+        Task<int> GetPendingCountAsync();
     }
 }

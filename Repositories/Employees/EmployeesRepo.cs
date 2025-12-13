@@ -114,5 +114,12 @@ namespace AttendanceSystemBackend.Repositories.Employees
             var parameters = new { Id = id };
             return await connection.ExecuteAsync(sql, parameters);
         }
+
+        public async Task<int> GetCountAsync()
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT COUNT(*) FROM Employees";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
     }
 }

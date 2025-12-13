@@ -56,7 +56,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // GET /api/v1/employeeshifts/{employeeId}/{startDate} (All users can view)
         [HttpGet("{employeeId}/{startDate}")]
-        public async Task<IActionResult> GetEmployeeShift([FromRoute] string employeeId, [FromRoute] DateOnly startDate)
+        public async Task<IActionResult> GetEmployeeShift([FromRoute] string employeeId, [FromRoute] DateTime startDate)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // PUT /api/v1/employeeshifts/{employeeId}/{startDate} (Admin only)
         [HttpPut("{employeeId}/{startDate}")]
-        public async Task<IActionResult> UpdateEmployeeShift([FromRoute] string employeeId, [FromRoute] DateOnly startDate, [FromBody] EmployeeShift employeeShift)
+        public async Task<IActionResult> UpdateEmployeeShift([FromRoute] string employeeId, [FromRoute] DateTime startDate, [FromBody] EmployeeShift employeeShift)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // DELETE /api/v1/employeeshifts/{employeeId}/{startDate} (Admin only)
         [HttpDelete("{employeeId}/{startDate}")]
-        public async Task<IActionResult> DeleteEmployeeShift([FromRoute] string employeeId, [FromRoute] DateOnly startDate)
+        public async Task<IActionResult> DeleteEmployeeShift([FromRoute] string employeeId, [FromRoute] DateTime startDate)
         {
             try
             {

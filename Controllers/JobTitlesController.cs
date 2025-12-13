@@ -1,21 +1,27 @@
 using AttendanceSystemBackend.Models;
+using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.JobTitles;
+using AttendanceSystemBackend.Services.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("jobtitles")]
+    [Authorize]
     public class JobTitlesController : Controller
     {
         private readonly IJobTitlesRepo _jobTitlesRepo;
+        private readonly IUserAuthorizationService _authorizationService;
 
-        public JobTitlesController(IJobTitlesRepo jobTitlesRepo)
+        public JobTitlesController(IJobTitlesRepo jobTitlesRepo, IUserAuthorizationService authorizationService)
         {
             _jobTitlesRepo = jobTitlesRepo;
+            _authorizationService = authorizationService;
         }
 
-        // GET /api/v1/jobtitles
+        // GET /api/v1/jobtitles (All users can view)
         [HttpGet]
         public async Task<IActionResult> GetAllJobTitles()
         {
@@ -38,30 +44,7 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // POST /api/v1/jobtitles
-        [HttpPost]
-        public async Task<IActionResult> AddJobTitle([FromBody] Models.JobTitle jobTitle)
-        {
-            try
-            {
-                var newId = await _jobTitlesRepo.AddAsync(jobTitle);
-                var response = ApiResponse<string>.SuccessResponse(
-                    newId,
-                    "Job title added successfully"
-                );
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = ApiResponse<string>.ErrorResponse(
-                    ex.Message,
-                    500
-                );
-                return StatusCode(500, response);
-            }
-        }
-
-        // GET /api/v1/jobtitles/{id}
+        // GET /api/v1/jobtitles/{id} (All users can view)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetJobTitleById([FromRoute] string id)
         {
@@ -93,16 +76,64 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // DELETE /api/v1/jobtitles/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteJobTitle([FromRoute] string id)
+        // POST /api/v1/jobtitles (Admin only)
+        [HttpPost]
+        public async Task<IActionResult> AddJobTitle([FromBody] JobTitleRequestDto jobTitle)
         {
             try
             {
-                var rowsAffected = await _jobTitlesRepo.DeleteAsync(id);
-                var response = ApiResponse<int>.SuccessResponse(
-                    rowsAffected,
-                    "Job title deleted successfully"
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<string>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
+                var newId = await _jobTitlesRepo.AddAsync(
+                    jobTitle.TitleName, 
+                    jobTitle.MinSalary, 
+                    jobTitle.MaxSalary);
+                
+                var response = ApiResponse<string>.SuccessResponse(
+                    newId,
+                    "Job title added successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<string>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // PUT /api/v1/jobtitles/{id} (Admin only)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateJobTitle([FromRoute] string id, [FromBody] JobTitleRequestDto jobTitle)
+        {
+            try
+            {
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<Models.JobTitle>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
+                var updated = await _jobTitlesRepo.UpdateAsync(
+                    id, 
+                    jobTitle.TitleName, 
+                    jobTitle.MinSalary, 
+                    jobTitle.MaxSalary);
+                
+                var response = ApiResponse<Models.JobTitle>.SuccessResponse(
+                    updated,
+                    "Job title updated successfully"
                 );
                 return Ok(response);
             }
@@ -116,16 +147,24 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // PUT /api/v1/jobtitles/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJobTitle([FromRoute] string id, [FromBody] Models.JobTitle jobTitle)
+        // DELETE /api/v1/jobtitles/{id} (Admin only)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteJobTitle([FromRoute] string id)
         {
             try
             {
-                var updated = await _jobTitlesRepo.UpdateAsync(id, jobTitle);
-                var response = ApiResponse<Models.JobTitle>.SuccessResponse(
-                    updated,
-                    "Job title updated successfully"
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<int>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
+                var rowsAffected = await _jobTitlesRepo.DeleteAsync(id);
+                var response = ApiResponse<int>.SuccessResponse(
+                    rowsAffected,
+                    "Job title deleted successfully"
                 );
                 return Ok(response);
             }

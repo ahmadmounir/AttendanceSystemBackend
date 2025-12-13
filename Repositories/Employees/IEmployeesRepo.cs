@@ -11,5 +11,7 @@
         Task<Models.Employees> UpdateAsync(string id, Models.Employees employee);
 
         Task<int> DeleteAsync(string id);
+
+        Task<int> GetCountAsync();
     }
 }

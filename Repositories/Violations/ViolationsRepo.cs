@@ -38,15 +38,17 @@ namespace AttendanceSystemBackend.Repositories.Violations
             return await connection.QueryAsync<Models.Violation>(sql, parameters);
         }
 
-        public async Task<string> AddAsync(string id, Models.Violation violation)
+        public async Task<string> AddAsync(Models.Violation violation)
         {
+            var newId = Guid.NewGuid().ToString();
+            
             using var connection = CreateConnection();
             var sql = @"INSERT INTO Violations (id, employeeId, violationDate, violationTypeId, penaltyAmount, notes) 
                 VALUES (@Id, @EmployeeId, @ViolationDate, @ViolationTypeId, @PenaltyAmount, @Notes)";
 
             var parameters = new
             {
-                Id = id,
+                Id = newId,
                 EmployeeId = violation.EmployeeId,
                 ViolationDate = violation.ViolationDate,
                 ViolationTypeId = violation.ViolationTypeId,
@@ -55,7 +57,7 @@ namespace AttendanceSystemBackend.Repositories.Violations
             };
 
             await connection.ExecuteAsync(sql, parameters);
-            return id;
+            return newId;
         }
 
         public async Task<int> UpdateAsync(string id, Models.Violation violation)

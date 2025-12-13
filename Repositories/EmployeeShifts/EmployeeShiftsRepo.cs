@@ -22,7 +22,7 @@ namespace AttendanceSystemBackend.Repositories.EmployeeShifts
             return await connection.QueryAsync<Models.EmployeeShift>(sql);
         }
 
-        public async Task<Models.EmployeeShift?> GetByEmployeeAndStartDateAsync(string employeeId, DateOnly startDate)
+        public async Task<Models.EmployeeShift?> GetByEmployeeAndStartDateAsync(string employeeId, DateTime startDate)
         {
             using var connection = CreateConnection();
             var sql = "SELECT * FROM EmployeeShifts WHERE employeeId = @EmployeeId AND startDate = @StartDate";
@@ -55,7 +55,7 @@ namespace AttendanceSystemBackend.Repositories.EmployeeShifts
             await connection.ExecuteAsync(sql, parameters);
         }
 
-        public async Task<int> UpdateAsync(string employeeId, DateOnly startDate, Models.EmployeeShift employeeShift)
+        public async Task<int> UpdateAsync(string employeeId, DateTime startDate, Models.EmployeeShift employeeShift)
         {
             using var connection = CreateConnection();
             var sql = @"UPDATE EmployeeShifts 
@@ -73,7 +73,7 @@ namespace AttendanceSystemBackend.Repositories.EmployeeShifts
             return await connection.ExecuteAsync(sql, parameters);
         }
 
-        public async Task<int> DeleteAsync(string employeeId, DateOnly startDate)
+        public async Task<int> DeleteAsync(string employeeId, DateTime startDate)
         {
             using var connection = CreateConnection();
             var sql = "DELETE FROM EmployeeShifts WHERE employeeId = @EmployeeId AND startDate = @StartDate";

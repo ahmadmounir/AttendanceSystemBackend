@@ -121,8 +121,7 @@ namespace AttendanceSystemBackend.Controllers
                         errorMessage ?? "Access denied", statusCode));
                 }
 
-                var newId = Guid.NewGuid().ToString();
-                await _violationsRepo.AddAsync(newId, violation);
+                var newId = await _violationsRepo.AddAsync(violation);
                 return Ok(ApiResponse<string>.SuccessResponse(
                     newId, "Violation added successfully"));
             }

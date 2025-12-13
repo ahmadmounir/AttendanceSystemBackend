@@ -1,6 +1,6 @@
 namespace AttendanceSystemBackend.Models.DTOs
 {
-    public class CreateEmployeeWithAccountDto
+    public class UpdateEmployeeWithAccountDto
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -12,7 +12,7 @@ namespace AttendanceSystemBackend.Models.DTOs
         public string JobId { get; set; }
         public string CountryId { get; set; }
         public bool IsSystemActive { get; set; }
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public string RoleId { get; set; }
     }
 }

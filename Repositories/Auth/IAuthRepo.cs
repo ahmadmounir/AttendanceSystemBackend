@@ -13,5 +13,8 @@ namespace AttendanceSystemBackend.Repositories.Auth
         Task<string?> GetRoleIdByUserIdAsync(string userId);
         Task<string> CreateUserAccountAsync(Models.UserAccount userAccount);
         Task<string?> GetEmployeeNameByIdAsync(string employeeId);
+        Task<Models.UserAccount?> GetUserAccountByEmployeeIdAsync(string employeeId);
+        Task<int> UpdateUserAccountAsync(string employeeId, string username, string? password, string roleId);
+        Task<int> DeleteUserAccountByEmployeeIdAsync(string employeeId);
     }
 }

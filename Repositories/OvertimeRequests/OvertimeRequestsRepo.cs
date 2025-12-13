@@ -92,5 +92,12 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
             var parameters = new { Id = id };
             return await connection.ExecuteAsync(sql, parameters);
         }
+
+        public async Task<int> GetPendingCountAsync()
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT COUNT(*) FROM OverTimeRequests WHERE isApproved = 'Pending'";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
     }
 }

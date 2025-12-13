@@ -127,5 +127,60 @@ namespace AttendanceSystemBackend.Repositories.Auth
             var parameters = new { EmployeeId = employeeId };
             return await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
         }
+
+        public async Task<Models.UserAccount?> GetUserAccountByEmployeeIdAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT * FROM UserAccounts WHERE employeeId = @EmployeeId";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.QueryFirstOrDefaultAsync<Models.UserAccount>(sql, parameters);
+        }
+
+        public async Task<int> UpdateUserAccountAsync(string employeeId, string username, string? password, string roleId)
+        {
+            using var connection = CreateConnection();
+            
+            string sql;
+            object parameters;
+            
+            if (!string.IsNullOrEmpty(password))
+            {
+                sql = @"UPDATE UserAccounts SET 
+                    username = @Username, 
+                    password = @Password, 
+                    roleId = @RoleId 
+                    WHERE employeeId = @EmployeeId";
+                parameters = new
+                {
+                    EmployeeId = employeeId,
+                    Username = username,
+                    Password = password,
+                    RoleId = roleId
+                };
+            }
+            else
+            {
+                sql = @"UPDATE UserAccounts SET 
+                    username = @Username, 
+                    roleId = @RoleId 
+                    WHERE employeeId = @EmployeeId";
+                parameters = new
+                {
+                    EmployeeId = employeeId,
+                    Username = username,
+                    RoleId = roleId
+                };
+            }
+            
+            return await connection.ExecuteAsync(sql, parameters);
+        }
+
+        public async Task<int> DeleteUserAccountByEmployeeIdAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = "DELETE FROM UserAccounts WHERE employeeId = @EmployeeId";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.ExecuteAsync(sql, parameters);
+        }
     }
 }

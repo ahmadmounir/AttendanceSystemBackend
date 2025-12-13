@@ -74,8 +74,8 @@ namespace AttendanceSystemBackend.Controllers
                 if (result == null || refreshToken == null)
                 {
                     var errorResponse = ApiResponse<LoginResponse>.ErrorResponse(
-                        "Not authorized",
-                        401
+                        "Invalid Credentials",
+                        400
                     );
                     return Unauthorized(errorResponse);
                 }
