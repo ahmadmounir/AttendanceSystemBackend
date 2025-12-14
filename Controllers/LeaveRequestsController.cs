@@ -137,9 +137,9 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // POST /api/v1/leaverequests (Employee creates request)
-        [HttpPost]
-        public async Task<IActionResult> CreateLeaveRequest([FromBody] LeaveRequestCreateDto dto)
+        // POST /api/v1/leaverequests/{id} (Employee creates request)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> CreateLeaveRequest([FromRoute] string id, [FromBody] LeaveRequestCreateDto dto)
         {
             try
             {
@@ -155,7 +155,7 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
-                var newId = await _leaveRequestService.CreateLeaveRequestAsync(userId, dto);
+                var newId = await _leaveRequestService.CreateLeaveRequestAsync(id, dto);
                 var response = ApiResponse<string>.SuccessResponse(
                     newId,
                     "Leave request submitted successfully"
@@ -190,7 +190,7 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
-                var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, userId, dto);
+                var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, dto);
                 var message = dto.Status == "Approved" 
                     ? "Leave request approved successfully" 
                     : "Leave request rejected successfully";

@@ -123,7 +123,7 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
             return leaveRequest;
         }
 
-        public async Task<bool> ReviewRequestAsync(string id, string status, string reviewedBy, string? reviewNotes)
+        public async Task<bool> ReviewRequestAsync(string id, string status)
         {
             using var connection = CreateConnection();
             var sql = @"UPDATE LeaveRequests SET status = @Status WHERE id = @Id";
