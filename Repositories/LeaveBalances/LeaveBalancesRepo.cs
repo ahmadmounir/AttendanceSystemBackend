@@ -38,26 +38,58 @@ namespace AttendanceSystemBackend.Repositories.LeaveBalances
             return await connection.QueryFirstOrDefaultAsync<Models.LeaveBalance>(sql, parameters);
         }
 
-        public async Task<Models.LeaveBalance?> GetByEmployeeAndTypeAsync(string employeeId, string leaveTypeId, int year)
+        public async Task<Models.LeaveBalance?> GetByEmployeeAndTypeAsync(string employeeId, string leaveTypeId)
         {
             using var connection = CreateConnection();
-            var sql = "SELECT * FROM LeaveBalances WHERE employeeId = @EmployeeId AND leaveTypeId = @LeaveTypeId AND year = @Year";
-            var parameters = new { EmployeeId = employeeId, LeaveTypeId = leaveTypeId, Year = year };
+            var sql = "SELECT * FROM LeaveBalances WHERE employeeId = @EmployeeId AND leaveTypeId = @LeaveTypeId";
+            var parameters = new { EmployeeId = employeeId, LeaveTypeId = leaveTypeId };
             return await connection.QueryFirstOrDefaultAsync<Models.LeaveBalance>(sql, parameters);
         }
 
-        public async Task<bool> DeductLeaveBalanceAsync(string employeeId, string leaveTypeId, int year, decimal days)
+        public async Task<bool> DeductLeaveBalanceAsync(string employeeId, string leaveTypeId, decimal days)
         {
             using var connection = CreateConnection();
             var sql = @"UPDATE LeaveBalances SET 
                 remainingDays = remainingDays - @Days
-                WHERE employeeId = @EmployeeId AND leaveTypeId = @LeaveTypeId AND year = @Year AND remainingDays >= @Days";
-
+                WHERE employeeId = @EmployeeId AND leaveTypeId = @LeaveTypeId AND remainingDays >= @Days";
             var parameters = new
             {
                 EmployeeId = employeeId,
                 LeaveTypeId = leaveTypeId,
-                Year = year,
+                Days = days
+            };
+
+            var rowsAffected = await connection.ExecuteAsync(sql, parameters);
+            return rowsAffected > 0;
+        }
+
+        public async Task<string> AddAsync(Models.LeaveBalance leaveBalance)
+        {
+            using var connection = CreateConnection();
+            var sql = @"INSERT INTO LeaveBalances (id, employeeId, leaveTypeId, remainingDays)
+                        VALUES (@Id, @EmployeeId, @LeaveTypeId, @RemainingDays)";
+            var parameters = new
+            {
+                Id = leaveBalance.Id,
+                EmployeeId = leaveBalance.EmployeeId,
+                LeaveTypeId = leaveBalance.LeaveTypeId,
+                RemainingDays = leaveBalance.RemainingDays
+            };
+
+            await connection.ExecuteAsync(sql, parameters);
+            return leaveBalance.Id;
+        }
+
+        public async Task<bool> AdjustLeaveBalanceAsync(string employeeId, string leaveTypeId, decimal days)
+        {
+            using var connection = CreateConnection();
+            var sql = @"UPDATE LeaveBalances SET 
+                remainingDays = remainingDays - @Days
+                WHERE employeeId = @EmployeeId AND leaveTypeId = @LeaveTypeId";
+            var parameters = new
+            {
+                EmployeeId = employeeId,
+                LeaveTypeId = leaveTypeId,
                 Days = days
             };
 

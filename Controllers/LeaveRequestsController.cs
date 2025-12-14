@@ -70,7 +70,7 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // GET /api/v1/leaverequests/my (Employee - own requests)
+        // GET /api/v1/leaverequests/my (Employee - own requests with balance)
         [HttpGet("my")]
         public async Task<IActionResult> GetMyLeaveRequests()
         {
@@ -81,15 +81,15 @@ namespace AttendanceSystemBackend.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    var errorResponse = ApiResponse<IEnumerable<LeaveRequest>>.ErrorResponse(
+                    var errorResponse = ApiResponse<IEnumerable<LeaveRequestWithBalanceDto>>.ErrorResponse(
                         "Not authorized",
                         401
                     );
                     return Unauthorized(errorResponse);
                 }
 
-                var items = await _leaveRequestsRepo.GetEmployeeRequestsAsync(userId);
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                var items = await _leaveRequestsRepo.GetEmployeeRequestsWithBalanceAsync(userId);
+                var response = ApiResponse<IEnumerable<LeaveRequestWithBalanceDto>>.SuccessResponse(
                     items,
                     "Leave requests retrieved successfully"
                 );
@@ -97,7 +97,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<LeaveRequestWithBalanceDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -165,6 +165,41 @@ namespace AttendanceSystemBackend.Controllers
             catch (Exception ex)
             {
                 var response = ApiResponse<string>.ErrorResponse(
+                    ex.Message,
+                    400
+                );
+                return BadRequest(response);
+            }
+        }
+
+        // PUT /api/v1/leaverequests/{id} (Employee updates pending request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLeaveRequest([FromRoute] string id, [FromBody] UpdateLeaveRequestDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<bool>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var success = await _leaveRequestService.UpdateLeaveRequestAsync(id, userId, dto);
+                var response = ApiResponse<bool>.SuccessResponse(
+                    success,
+                    "Leave request updated successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<bool>.ErrorResponse(
                     ex.Message,
                     400
                 );

@@ -26,11 +26,9 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
         {
             var days = (decimal)(dto.EndDate - dto.StartDate).TotalDays + 1;
 
-            var currentYear = DateTime.UtcNow.Year;
             var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(
                 employeeId, 
-                dto.LeaveTypeId, 
-                currentYear
+                dto.LeaveTypeId
             );
 
             if (balance == null)
@@ -86,19 +84,76 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
             if (dto.Status == "Approved")
             {
                 var days = (decimal)(request.EndDate - request.StartDate).TotalDays + 1;
-                var currentYear = DateTime.UtcNow.Year;
-                var deducted = await _leaveBalancesRepo.DeductLeaveBalanceAsync(
-                    request.EmployeeId,
-                    request.LeaveTypeId,
-                    currentYear,
-                    days
-                );
 
-                if (!deducted)
+                var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(request.EmployeeId, request.LeaveTypeId);
+                if (balance == null)
                 {
-                    throw new Exception("Failed to deduct leave balance. Insufficient balance or balance not found.");
+                    // Create new balance with initial max of 20 days, then deduct the requested days
+                    var newBalance = new Models.LeaveBalance
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EmployeeId = request.EmployeeId,
+                        LeaveTypeId = request.LeaveTypeId,
+                        RemainingDays = 20 - days
+                    };
+
+                    await _leaveBalancesRepo.AddAsync(newBalance);
+                }
+                else
+                {
+                    // Adjust existing balance by subtracting days (allow negative)
+                    await _leaveBalancesRepo.AdjustLeaveBalanceAsync(request.EmployeeId, request.LeaveTypeId, days);
                 }
             }
+            return true;
+        }
+
+        public async Task<bool> UpdateLeaveRequestAsync(string requestId, string employeeId, UpdateLeaveRequestDto dto)
+        {
+            // Validate request exists and belongs to employee
+            var request = await _leaveRequestsRepo.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                throw new Exception("Leave request not found");
+            }
+
+            if (request.EmployeeId != employeeId)
+            {
+                throw new Exception("You can only update your own requests");
+            }
+
+            if (request.Status != "Pending")
+            {
+                throw new Exception("Only pending requests can be updated");
+            }
+
+            // Validate new dates and balance
+            var newDays = (decimal)(dto.EndDate - dto.StartDate).TotalDays + 1;
+            
+            var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(employeeId, dto.LeaveTypeId);
+            if (balance == null)
+            {
+                throw new Exception("No leave balance found for this leave type");
+            }
+
+            if (balance.RemainingDays < newDays)
+            {
+                throw new Exception($"Insufficient leave balance. Available: {balance.RemainingDays} days, Requested: {newDays} days");
+            }
+
+            // Update the request
+            var updatedRequest = new LeaveRequest
+            {
+                Id = requestId,
+                EmployeeId = employeeId,
+                LeaveTypeId = dto.LeaveTypeId,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Reason = dto.Reason,
+                Status = "Pending"
+            };
+
+            await _leaveRequestsRepo.UpdateAsync(requestId, updatedRequest);
             return true;
         }
     }

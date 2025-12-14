@@ -7,5 +7,6 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
     {
         Task<string> CreateLeaveRequestAsync(string employeeId, LeaveRequestCreateDto dto);
         Task<bool> ReviewLeaveRequestAsync(string requestId, string reviewedBy, LeaveRequestReviewDto dto);
+        Task<bool> UpdateLeaveRequestAsync(string requestId, string employeeId, UpdateLeaveRequestDto dto);
     }
 }

@@ -37,6 +37,29 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
             return await connection.QueryAsync<Models.LeaveRequest>(sql, parameters);
         }
 
+        public async Task<IEnumerable<Models.DTOs.LeaveRequestWithBalanceDto>> GetEmployeeRequestsWithBalanceAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = @"SELECT
+                lr.id,
+                lr.employeeId,
+                lr.leaveTypeId,
+                lt.typeName,
+                lr.startDate,
+                lr.endDate,
+                lr.status,
+                lr.reason,
+                ISNULL(lb.remainingDays, 0) AS remainingDays,
+                lt.maxDaysPerYear
+            FROM LeaveRequests lr
+            LEFT JOIN LeaveTypes lt ON lr.leaveTypeId = lt.id
+            LEFT JOIN LeaveBalances lb ON lr.employeeId = lb.employeeId AND lr.leaveTypeId = lb.leaveTypeId
+            WHERE lr.employeeId = @EmployeeId
+            ORDER BY lr.startDate DESC";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.QueryAsync<Models.DTOs.LeaveRequestWithBalanceDto>(sql, parameters);
+        }
+
         public async Task<Models.LeaveRequest?> GetByIdAsync(string id)
         {
             using var connection = CreateConnection();
