@@ -7,6 +7,6 @@ namespace AttendanceSystemBackend.Models
         public DateTime RequestDate { get; set; }
         public decimal Hours { get; set; } 
         public string Reason { get; set; }
-        public string IsApproved { get; set; } 
+        public string Status { get; set; } 
     }
 }

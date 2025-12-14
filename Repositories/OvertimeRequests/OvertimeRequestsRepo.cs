@@ -36,10 +36,10 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
             using var connection = CreateConnection();
 
             // Ensure default approval status
-            var status = string.IsNullOrWhiteSpace(request.IsApproved) ? "Pending" : request.IsApproved;
+            var status = string.IsNullOrWhiteSpace(request.Status) ? "Pending" : request.Status;
 
-            var sql = @"INSERT INTO OverTimeRequests (id, employeeId, requestDate, hours, reason, isApproved)
-                VALUES (@Id, @EmployeeId, @RequestDate, @Hours, @Reason, @IsApproved)";
+var sql = @"INSERT INTO OverTimeRequests (id, employeeId, requestDate, hours, reason, status)
+                        VALUES (@Id, @EmployeeId, @RequestDate, @Hours, @Reason, @Status)";
 
             var parameters = new
             {
@@ -48,7 +48,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
                 RequestDate = request.RequestDate,
                 Hours = request.Hours,
                 Reason = request.Reason,
-                IsApproved = status
+                Status = status
             };
 
             await connection.ExecuteAsync(sql, parameters);
@@ -63,7 +63,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
                 requestDate = @RequestDate,
                 hours = @Hours,
                 reason = @Reason
-                WHERE id = @Id AND isApproved = 'Pending'";
+                WHERE id = @Id AND status = 'Pending'";
 
             var parameters = new
             {
@@ -80,7 +80,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
         public async Task<int> UpdateApprovalStatusAsync(string id, string status)
         {
             using var connection = CreateConnection();
-            var sql = "UPDATE OverTimeRequests SET isApproved = @Status WHERE id = @Id";
+            var sql = "UPDATE OverTimeRequests SET status = @Status WHERE id = @Id";
             var parameters = new { Id = id, Status = status };
             return await connection.ExecuteAsync(sql, parameters);
         }
@@ -88,7 +88,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
         public async Task<int> DeleteAsync(string id)
         {
             using var connection = CreateConnection();
-            var sql = "DELETE FROM OverTimeRequests WHERE id = @Id AND isApproved = 'Pending'";
+            var sql = "DELETE FROM OverTimeRequests WHERE id = @Id AND status = 'Pending'";
             var parameters = new { Id = id };
             return await connection.ExecuteAsync(sql, parameters);
         }
@@ -96,7 +96,7 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
         public async Task<int> GetPendingCountAsync()
         {
             using var connection = CreateConnection();
-            var sql = "SELECT COUNT(*) FROM OverTimeRequests WHERE isApproved = 'Pending'";
+            var sql = "SELECT COUNT(*) FROM OverTimeRequests WHERE status = 'Pending'";
             return await connection.ExecuteScalarAsync<int>(sql);
         }
     }

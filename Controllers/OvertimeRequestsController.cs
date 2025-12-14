@@ -1,11 +1,15 @@
 using AttendanceSystemBackend.Models;
+using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.OvertimeRequests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AttendanceSystemBackend.Controllers
 {
     [ApiController]
     [Route("overtimerequests")]
+    [Authorize]
     public class OvertimeRequestsController : Controller
     {
         private readonly IOvertimeRequestsRepo _repo;
@@ -72,13 +76,31 @@ namespace AttendanceSystemBackend.Controllers
 
         // POST /api/v1/overtimerequests
         [HttpPost]
-        public async Task<IActionResult> AddOvertimeRequest([FromBody] Models.OvertimeRequest request)
+        public async Task<IActionResult> AddOvertimeRequest([FromBody] OvertimeRequestCreateDto dto)
         {
             try
             {
-                // Ensure pending by default
-                if (string.IsNullOrWhiteSpace(request.IsApproved))
-                    request.IsApproved = "Pending";
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<string>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                // Create overtime request with employee and status
+                var request = new Models.OvertimeRequest
+                {
+                    EmployeeId = userId,
+                    RequestDate = dto.RequestDate,
+                    Hours = dto.Hours,
+                    Reason = dto.Reason,
+                    Status = dto.Status ?? "Pending"
+                };
 
                 var newId = await _repo.AddAsync(request);
                 var response = ApiResponse<string>.SuccessResponse(
@@ -152,6 +174,37 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<int>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var request = await _repo.GetByIdAsync(id);
+                if (request == null)
+                {
+                    var notFoundResponse = ApiResponse<int>.ErrorResponse(
+                        "Overtime request not found",
+                        404
+                    );
+                    return NotFound(notFoundResponse);
+                }
+
+                if (request.EmployeeId != userId)
+                {
+                    var forbiddenResponse = ApiResponse<int>.ErrorResponse(
+                        "You can only delete your own requests",
+                        403
+                    );
+                    return StatusCode(403, forbiddenResponse);
+                }
+
                 var rows = await _repo.DeleteAsync(id);
                 var response = ApiResponse<int>.SuccessResponse(
                     rows,
