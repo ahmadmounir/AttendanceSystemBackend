@@ -30,8 +30,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _leaveRequestsRepo.GetAllAsync();
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                var items = await _leaveRequestsRepo.GetAllWithDetailsAsync();
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.SuccessResponse(
                     items,
                     "Leave requests retrieved successfully"
                 );
@@ -39,7 +39,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -53,8 +53,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _leaveRequestsRepo.GetPendingRequestsAsync();
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                var items = await _leaveRequestsRepo.GetPendingWithDetailsAsync();
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.SuccessResponse(
                     items,
                     "Pending leave requests retrieved successfully"
                 );
@@ -62,7 +62,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );

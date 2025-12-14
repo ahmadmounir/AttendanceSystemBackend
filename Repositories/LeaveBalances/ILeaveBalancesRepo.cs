@@ -5,7 +5,9 @@ namespace AttendanceSystemBackend.Repositories.LeaveBalances
         Task<IEnumerable<Models.LeaveBalance>> GetAllAsync();
         Task<IEnumerable<Models.LeaveBalance>> GetEmployeeBalancesAsync(string employeeId);
         Task<Models.LeaveBalance?> GetByIdAsync(string id);
-        Task<Models.LeaveBalance?> GetByEmployeeAndTypeAsync(string employeeId, string leaveTypeId, int year);
-        Task<bool> DeductLeaveBalanceAsync(string employeeId, string leaveTypeId, int year, decimal days);
+        Task<Models.LeaveBalance?> GetByEmployeeAndTypeAsync(string employeeId, string leaveTypeId);
+        Task<bool> DeductLeaveBalanceAsync(string employeeId, string leaveTypeId, decimal days);
+        Task AddAsync(Models.LeaveBalance balance);
+        Task AdjustLeaveBalanceAsync(string employeeId, string leaveTypeId, decimal days);
     }
 }
