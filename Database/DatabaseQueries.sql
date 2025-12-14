@@ -128,14 +128,6 @@ CREATE TABLE [RefreshTokens] (
 )
 GO
 
-CREATE TABLE [Notifications] (
-  [id] nvarchar(255) PRIMARY KEY,
-  [userId] nvarchar(255) NOT NULL,
-  [message] nvarchar(255) NOT NULL,
-  [isRead] bit DEFAULT (0),
-  [createdAt] datetime NOT NULL
-)
-GO
 
 CREATE TABLE [EmployeeShifts] (
   [employeeId] nvarchar(255) NOT NULL,
@@ -151,9 +143,7 @@ CREATE TABLE [AttendanceLogs] (
   [employeeId] nvarchar(255) NOT NULL,
   [clockInTime] datetime NOT NULL,
   [clockOutTime] datetime,
-  [totalHours] decimal,
-  [doorLocation] nvarchar(255),
-  [exceptionType] nvarchar(255)
+  [totalHours] decimal
 )
 GO
 
@@ -195,22 +185,6 @@ CREATE TABLE [LeaveBalances] (
 )
 GO
 
-CREATE TABLE [ViolationTypes] (
-  [id] nvarchar(255) PRIMARY KEY,
-  [typeName] nvarchar(255) UNIQUE NOT NULL,
-  [description] text
-)
-GO
-
-CREATE TABLE [Violations] (
-  [id] nvarchar(255) PRIMARY KEY,
-  [employeeId] nvarchar(255) NOT NULL,
-  [violationDate] date NOT NULL,
-  [violationTypeId] nvarchar(255) NOT NULL,
-  [penaltyAmount] decimal(10,2),
-  [notes] text
-)
-GO
 
 CREATE TABLE [AuditLogs] (
   [id] nvarchar(255) PRIMARY KEY,
@@ -243,9 +217,6 @@ GO
 ALTER TABLE [RefreshTokens] ADD FOREIGN KEY ([userId]) REFERENCES [UserAccounts] ([id])
 GO
 
-ALTER TABLE [Notifications] ADD FOREIGN KEY ([userId]) REFERENCES [UserAccounts] ([id])
-GO
-
 ALTER TABLE [EmployeeShifts] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
 GO
 
@@ -268,12 +239,6 @@ ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees
 GO
 
 ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([leaveTypeId]) REFERENCES [LeaveTypes] ([id])
-GO
-
-ALTER TABLE [Violations] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
-GO
-
-ALTER TABLE [Violations] ADD FOREIGN KEY ([violationTypeId]) REFERENCES [ViolationTypes] ([id])
 GO
 
 ALTER TABLE [AuditLogs] ADD FOREIGN KEY ([userId]) REFERENCES [UserAccounts] ([id])

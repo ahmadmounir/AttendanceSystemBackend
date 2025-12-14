@@ -10,7 +10,5 @@ namespace AttendanceSystemBackend.Models.DTOs
         public DateTime ClockInTime { get; set; }
         public DateTime? ClockOutTime { get; set; }
         public decimal? TotalHours { get; set; }
-        public string DoorLocation { get; set; }
-        public string ExceptionType { get; set; }
     }
 }

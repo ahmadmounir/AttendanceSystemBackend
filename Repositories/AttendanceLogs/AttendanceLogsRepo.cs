@@ -38,9 +38,7 @@ SELECT TOP (100)
     (e.firstName + ' ' + e.lastName) AS employeeFullName,
     a.clockInTime,
     a.clockOutTime,
-    a.totalHours,
-    a.doorLocation,
-    a.exceptionType
+    a.totalHours
 FROM AttendanceLogs a
 LEFT JOIN Employees e ON e.id = a.employeeId
 ORDER BY
@@ -64,7 +62,7 @@ ORDER BY
         {
             using var connection = CreateConnection();
             var sql = @"SELECT a.id, a.employeeId, (e.firstName + ' ' + e.lastName) AS employeeFullName,
-                a.clockInTime, a.clockOutTime, a.totalHours, a.doorLocation, a.exceptionType
+                a.clockInTime, a.clockOutTime, a.totalHours
                 FROM AttendanceLogs a
                 LEFT JOIN Employees e ON e.id = a.employeeId
                 WHERE a.id = @Id";
@@ -83,7 +81,7 @@ ORDER BY
         {
             using var connection = CreateConnection();
             var sql = @"SELECT TOP (100) a.id, a.employeeId, (e.firstName + ' ' + e.lastName) AS employeeFullName,
-                a.clockInTime, a.clockOutTime, a.totalHours, a.doorLocation, a.exceptionType
+                a.clockInTime, a.clockOutTime, a.totalHours
                 FROM AttendanceLogs a
                 LEFT JOIN Employees e ON e.id = a.employeeId
                 WHERE a.employeeId = @EmployeeId
@@ -91,53 +89,50 @@ ORDER BY
             return await connection.QueryAsync<Models.DTOs.AttendanceLogWithEmployeeDto>(sql, new { EmployeeId = employeeId });
         }
 
-        public async Task<string> AddAsync(Models.AttendanceLog attendanceLog)
+        public async Task<string> AddAsync(string empId)
         {
             var newId = Guid.NewGuid();
 
             using var connection = CreateConnection();
 
-            var sql = @"INSERT INTO AttendanceLogs (id, employeeId, clockInTime, clockOutTime, totalHours, doorLocation, exceptionType)
-                VALUES (@Id, @EmployeeId, @ClockInTime, @ClockOutTime, @TotalHours, @DoorLocation, @ExceptionType)";
+            var sql = @"INSERT INTO AttendanceLogs (id, employeeId, clockInTime, clockOutTime, totalHours)
+                VALUES (@Id, @EmployeeId, @ClockInTime, @ClockOutTime, @TotalHours)";
 
             var parameters = new
             {
                 Id = newId.ToString(),
-                EmployeeId = attendanceLog.EmployeeId,
-                ClockInTime = attendanceLog.ClockInTime,
-                ClockOutTime = attendanceLog.ClockOutTime,
-                TotalHours = attendanceLog.TotalHours,
-
+                EmployeeId = empId,
+                ClockInTime = DateTime.Now,
+                ClockOutTime = (DateTime?)null,
+                TotalHours = 0,
             };
 
             await connection.ExecuteAsync(sql, parameters);
             return newId.ToString();
         }
 
-        public async Task<Models.AttendanceLog> UpdateAsync(string id, Models.AttendanceLog attendanceLog)
+        public async Task<string> UpdateAsync(string id)
         {
             using var connection = CreateConnection();
-            var sql = @"UPDATE AttendanceLogs SET 
-                employeeId = @EmployeeId,
-                clockInTime = @ClockInTime,
+            var sql = @"UPDATE AttendanceLogs SET
                 clockOutTime = @ClockOutTime,
-                totalHours = @TotalHours,
-                doorLocation = @DoorLocation,
-                exceptionType = @ExceptionType
+                totalHours = @TotalHours
                 WHERE id = @Id";
+
+            var log = await GetByIdAsync(id);
+            var now = DateTime.Now;
+
+            var duration = now - log.ClockInTime;
 
             var parameters = new
             {
                 Id = id,
-                EmployeeId = attendanceLog.EmployeeId,
-                ClockInTime = attendanceLog.ClockInTime,
-                ClockOutTime = attendanceLog.ClockOutTime,
-                TotalHours = attendanceLog.TotalHours,
-
+                ClockOutTime = now,
+                TotalHours = (decimal)duration.TotalMinutes // for test 
             };
 
             await connection.ExecuteAsync(sql, parameters);
-            return attendanceLog;
+            return id;
         }
     }
 }

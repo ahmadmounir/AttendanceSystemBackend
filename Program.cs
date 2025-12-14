@@ -24,10 +24,11 @@ using Scalar.AspNetCore;
 using System.Text;
 
 using Dapper;
+using AttendanceSystemBackend.Repositories.AttendanceLogs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Dapper handlers to map SQL `time` (TimeSpan) to .NET `TimeOnly` / `TimeOnly?`
+// Register Dapper handler to map SQL `time` (TimeSpan) to .NET `TimeOnly`
 SqlMapper.AddTypeHandler(new DapperTimeOnlyTypeHandler());
 
 // Configure to always use port 5079
@@ -75,6 +76,7 @@ builder.Services.AddScoped<ILeaveTypesRepo, LeaveTypesRepo>();
 builder.Services.AddScoped<IShiftsRepo, ShiftsRepo>();
 builder.Services.AddScoped<IEmployeeShiftsRepo, EmployeeShiftsRepo>();
 builder.Services.AddScoped<IOvertimeRequestsRepo, OvertimeRequestsRepo>();
+builder.Services.AddScoped<IAttendanceLogsRepo, AttendanceLogsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>

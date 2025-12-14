@@ -83,7 +83,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // POST /api/v1/attendancelogs (Admin only)
         [HttpPost]
-        public async Task<IActionResult> AddAttendanceLog([FromBody] Models.AttendanceLog attendanceLog)
+        public async Task<IActionResult> AddAttendanceLog([FromBody] Models.DTOs.AttendanceLogReqDto attendanceLog)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace AttendanceSystemBackend.Controllers
                         errorMessage ?? "Access denied", statusCode));
                 }
 
-                var newId = await _attendanceLogsRepo.AddAsync(attendanceLog);
+                var newId = await _attendanceLogsRepo.AddAsync(attendanceLog.Id); // employeeId
                 return Ok(ApiResponse<string>.SuccessResponse(
                     newId, "Attendance log added successfully"));
             }
@@ -108,7 +108,7 @@ namespace AttendanceSystemBackend.Controllers
 
         // PUT /api/v1/attendancelogs/{id} (Admin only)
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAttendanceLog([FromRoute] string id, [FromBody] Models.AttendanceLog attendanceLog)
+        public async Task<IActionResult> UpdateAttendanceLog([FromRoute] string id)
         {
             try
             {
@@ -120,8 +120,8 @@ namespace AttendanceSystemBackend.Controllers
                         errorMessage ?? "Access denied", statusCode));
                 }
 
-                var updated = await _attendanceLogsRepo.UpdateAsync(id, attendanceLog);
-                return Ok(ApiResponse<Models.AttendanceLog>.SuccessResponse(
+                var updated = await _attendanceLogsRepo.UpdateAsync(id);
+                return Ok(ApiResponse<string>.SuccessResponse(
                     updated, "Attendance log updated successfully"));
             }
             catch (Exception ex)
