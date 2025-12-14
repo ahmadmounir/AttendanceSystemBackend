@@ -3,7 +3,9 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
     public interface ILeaveRequestsRepo
     {
         Task<IEnumerable<Models.LeaveRequest>> GetAllAsync();
+        Task<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>> GetAllWithDetailsAsync();
         Task<IEnumerable<Models.LeaveRequest>> GetPendingRequestsAsync();
+        Task<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>> GetPendingWithDetailsAsync();
         Task<IEnumerable<Models.LeaveRequest>> GetEmployeeRequestsAsync(string employeeId);
         Task<Models.LeaveRequest?> GetByIdAsync(string id);
         Task<string> AddAsync(Models.LeaveRequest leaveRequest);

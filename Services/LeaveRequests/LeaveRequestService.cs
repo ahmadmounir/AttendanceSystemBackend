@@ -26,11 +26,9 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
         {
             var days = (decimal)(dto.EndDate - dto.StartDate).TotalDays + 1;
 
-            var currentYear = DateTime.UtcNow.Year;
             var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(
                 employeeId, 
-                dto.LeaveTypeId, 
-                currentYear
+                dto.LeaveTypeId
             );
 
             if (balance == null)
@@ -86,17 +84,25 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
             if (dto.Status == "Approved")
             {
                 var days = (decimal)(request.EndDate - request.StartDate).TotalDays + 1;
-                var currentYear = DateTime.UtcNow.Year;
-                var deducted = await _leaveBalancesRepo.DeductLeaveBalanceAsync(
-                    request.EmployeeId,
-                    request.LeaveTypeId,
-                    currentYear,
-                    days
-                );
 
-                if (!deducted)
+                var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(request.EmployeeId, request.LeaveTypeId);
+                if (balance == null)
                 {
-                    throw new Exception("Failed to deduct leave balance. Insufficient balance or balance not found.");
+                    // Create new balance with initial max of 20 days, then deduct the requested days
+                    var newBalance = new Models.LeaveBalance
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EmployeeId = request.EmployeeId,
+                        LeaveTypeId = request.LeaveTypeId,
+                        RemainingDays = 20 - days
+                    };
+
+                    await _leaveBalancesRepo.AddAsync(newBalance);
+                }
+                else
+                {
+                    // Adjust existing balance by subtracting days (allow negative)
+                    await _leaveBalancesRepo.AdjustLeaveBalanceAsync(request.EmployeeId, request.LeaveTypeId, days);
                 }
             }
             return true;
