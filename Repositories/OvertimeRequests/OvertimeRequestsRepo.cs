@@ -55,8 +55,8 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
             // Ensure default approval status
             var status = string.IsNullOrWhiteSpace(request.Status) ? "Pending" : request.Status;
 
-            var sql = @"INSERT INTO OverTimeRequests (id, employeeId, requestDate, hours, reason, status)
-                VALUES (@Id, @EmployeeId, @RequestDate, @Hours, @Reason, @Status)";
+var sql = @"INSERT INTO OverTimeRequests (id, employeeId, requestDate, hours, reason, status)
+                        VALUES (@Id, @EmployeeId, @RequestDate, @Hours, @Reason, @Status)";
 
             var parameters = new
             {
