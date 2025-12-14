@@ -77,8 +77,8 @@ namespace AttendanceSystemBackend.Controllers
             try
             {
                 // Ensure pending by default
-                if (string.IsNullOrWhiteSpace(request.IsApproved))
-                    request.IsApproved = "Pending";
+                if (string.IsNullOrWhiteSpace(request.Status))
+                    request.Status = "Pending";
 
                 var newId = await _repo.AddAsync(request);
                 var response = ApiResponse<string>.SuccessResponse(
