@@ -30,8 +30,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _leaveRequestsRepo.GetAllAsync();
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                var items = await _leaveRequestsRepo.GetAllWithDetailsAsync();
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.SuccessResponse(
                     items,
                     "Leave requests retrieved successfully"
                 );
@@ -39,7 +39,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -53,8 +53,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _leaveRequestsRepo.GetPendingRequestsAsync();
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
+                var items = await _leaveRequestsRepo.GetPendingWithDetailsAsync();
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.SuccessResponse(
                     items,
                     "Pending leave requests retrieved successfully"
                 );
@@ -62,7 +62,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -137,9 +137,9 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // POST /api/v1/leaverequests (Employee creates request)
-        [HttpPost]
-        public async Task<IActionResult> CreateLeaveRequest([FromBody] LeaveRequestCreateDto dto)
+        // POST /api/v1/leaverequests/{id} (Employee creates request)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> CreateLeaveRequest([FromRoute] string id, [FromBody] LeaveRequestCreateDto dto)
         {
             try
             {
@@ -155,7 +155,7 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
-                var newId = await _leaveRequestService.CreateLeaveRequestAsync(userId, dto);
+                var newId = await _leaveRequestService.CreateLeaveRequestAsync(id, dto);
                 var response = ApiResponse<string>.SuccessResponse(
                     newId,
                     "Leave request submitted successfully"
@@ -190,7 +190,7 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
-                var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, userId, dto);
+                var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, dto);
                 var message = dto.Status == "Approved" 
                     ? "Leave request approved successfully" 
                     : "Leave request rejected successfully";

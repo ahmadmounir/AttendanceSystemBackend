@@ -25,8 +25,8 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                var items = await _repo.GetAllAsync();
-                var response = ApiResponse<IEnumerable<Models.OvertimeRequest>>.SuccessResponse(
+                var items = await _repo.GetAllWithEmployeeAsync();
+                var response = ApiResponse<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>>.SuccessResponse(
                     items,
                     "Overtime requests retrieved successfully"
                 );
@@ -34,7 +34,7 @@ namespace AttendanceSystemBackend.Controllers
             }
             catch (Exception ex)
             {
-                var response = ApiResponse<IEnumerable<Models.OvertimeRequest>>.ErrorResponse(
+                var response = ApiResponse<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -101,6 +101,9 @@ namespace AttendanceSystemBackend.Controllers
                     Reason = dto.Reason,
                     Status = dto.Status ?? "Pending"
                 };
+                // Ensure pending by default
+                if (string.IsNullOrWhiteSpace(request.Status))
+                    request.Status = "Pending";
 
                 var newId = await _repo.AddAsync(request);
                 var response = ApiResponse<string>.SuccessResponse(
@@ -145,12 +148,11 @@ namespace AttendanceSystemBackend.Controllers
 
         // PUT /api/v1/overtimerequests/{id}/approval
         [HttpPut("{id}/approval")]
-        public async Task<IActionResult> UpdateRequestStatus([FromRoute] string id, [FromBody] dynamic data)
+        public async Task<IActionResult> UpdateRequestStatus([FromRoute] string id, [FromBody] Models.DTOs.OvertimeRequestStatusDto request)
         {
             try
             {
-                string status = data.status;
-                var rows = await _repo.UpdateApprovalStatusAsync(id, status);
+                var rows = await _repo.UpdateApprovalStatusAsync(id, request.Status);
                 var updated = await _repo.GetByIdAsync(id);
                 var response = ApiResponse<Models.OvertimeRequest>.SuccessResponse(
                     updated,

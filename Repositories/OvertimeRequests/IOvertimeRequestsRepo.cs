@@ -4,6 +4,8 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
     {
         Task<IEnumerable<Models.OvertimeRequest>> GetAllAsync();
 
+        Task<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>> GetAllWithEmployeeAsync();
+
         Task<Models.OvertimeRequest?> GetByIdAsync(string id);
 
         Task<string> AddAsync(Models.OvertimeRequest request);

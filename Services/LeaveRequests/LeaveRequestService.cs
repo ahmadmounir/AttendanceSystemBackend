@@ -26,16 +26,22 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
         {
             var days = (decimal)(dto.EndDate - dto.StartDate).TotalDays + 1;
 
-            var currentYear = DateTime.UtcNow.Year;
             var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(
                 employeeId, 
-                dto.LeaveTypeId, 
-                currentYear
+                dto.LeaveTypeId
             );
 
             if (balance == null)
             {
-                throw new Exception("No leave balance found for this leave type");
+                balance = new Models.LeaveBalance
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    EmployeeId = employeeId,
+                    LeaveTypeId = dto.LeaveTypeId,
+                    RemainingDays = 20
+                };
+
+                await _leaveBalancesRepo.AddAsync(balance);
             }
 
             if (balance.RemainingDays < days)
@@ -56,7 +62,7 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
             return await _leaveRequestsRepo.AddAsync(leaveRequest);
         }
 
-        public async Task<bool> ReviewLeaveRequestAsync(string requestId, string reviewedBy, LeaveRequestReviewDto dto)
+        public async Task<bool> ReviewLeaveRequestAsync(string requestId, LeaveRequestReviewDto dto)
         {
             if (dto.Status != "Approved" && dto.Status != "Rejected")
             {
@@ -74,29 +80,35 @@ namespace AttendanceSystemBackend.Services.LeaveRequests
                 throw new Exception("Only pending requests can be reviewed");
             }
 
-            var success = await _leaveRequestsRepo.ReviewRequestAsync(
-                requestId, 
-                dto.Status, 
-                reviewedBy, 
-                dto.ReviewNotes
-            );
+            var success = await _leaveRequestsRepo.ReviewRequestAsync(requestId, dto.Status);
 
             if (!success) return false;
 
             if (dto.Status == "Approved")
             {
-                var days = (decimal)(request.EndDate - request.StartDate).TotalDays + 1;
-                var currentYear = DateTime.UtcNow.Year;
-                var deducted = await _leaveBalancesRepo.DeductLeaveBalanceAsync(
-                    request.EmployeeId,
-                    request.LeaveTypeId,
-                    currentYear,
-                    days
-                );
+                var days = (decimal)(request.EndDate - request.StartDate).TotalDays;
 
-                if (!deducted)
+                var balance = await _leaveBalancesRepo.GetByEmployeeAndTypeAsync(request.EmployeeId, request.LeaveTypeId);
+                if (balance == null)
                 {
-                    throw new Exception("Failed to deduct leave balance. Insufficient balance or balance not found.");
+                    throw new Exception("Leave balance not found for the employee and leave type.");
+                }
+                else
+                {
+                    var remainingDays = balance.RemainingDays - days; // Assume initial balance is 20 days
+                    if (remainingDays < 0)
+                    {
+                        throw new Exception("Your remining days is lower then the Balance.");
+                    }
+                    var newBalance = new Models.LeaveBalance
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EmployeeId = request.EmployeeId,
+                        LeaveTypeId = request.LeaveTypeId,
+                        RemainingDays = remainingDays
+                    };
+                    // Adjust existing balance by subtracting days (allow negative)
+                    await _leaveBalancesRepo.AdjustLeaveBalanceAsync(request.EmployeeId, request.LeaveTypeId, days);
                 }
             }
             return true;

@@ -22,11 +22,38 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
             return await connection.QueryAsync<Models.LeaveRequest>(sql);
         }
 
+        public async Task<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>> GetAllWithDetailsAsync()
+        {
+            using var connection = CreateConnection();
+            var sql = @"SELECT TOP (100) lr.id, lr.employeeId, (e.firstName + ' ' + e.lastName) AS employeeName,
+                lr.leaveTypeId, lt.typeName AS typeName, lr.startDate, lr.endDate, lr.status, lr.reason
+                FROM LeaveRequests lr
+                LEFT JOIN Employees e ON e.id = lr.employeeId
+                LEFT JOIN LeaveTypes lt ON lt.id = lr.leaveTypeId
+                ORDER BY lr.startDate DESC";
+
+            return await connection.QueryAsync<Models.DTOs.LeaveRequestWithDetailsDto>(sql);
+        }
+
         public async Task<IEnumerable<Models.LeaveRequest>> GetPendingRequestsAsync()
         {
             using var connection = CreateConnection();
             var sql = "SELECT * FROM LeaveRequests WHERE status = 'Pending' ORDER BY startDate DESC";
             return await connection.QueryAsync<Models.LeaveRequest>(sql);
+        }
+
+        public async Task<IEnumerable<Models.DTOs.LeaveRequestWithDetailsDto>> GetPendingWithDetailsAsync()
+        {
+            using var connection = CreateConnection();
+            var sql = @"SELECT TOP (100) lr.id, lr.employeeId, (e.firstName + ' ' + e.lastName) AS employeeName,
+                lr.leaveTypeId, lt.typeName AS typeName, lr.startDate, lr.endDate, lr.status, lr.reason
+                FROM LeaveRequests lr
+                LEFT JOIN Employees e ON e.id = lr.employeeId
+                LEFT JOIN LeaveTypes lt ON lt.id = lr.leaveTypeId
+                WHERE lr.status = 'Pending'
+                ORDER BY lr.startDate DESC";
+
+            return await connection.QueryAsync<Models.DTOs.LeaveRequestWithDetailsDto>(sql);
         }
 
         public async Task<IEnumerable<Models.LeaveRequest>> GetEmployeeRequestsAsync(string employeeId)
@@ -96,7 +123,7 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
             return leaveRequest;
         }
 
-        public async Task<bool> ReviewRequestAsync(string id, string status, string reviewedBy, string? reviewNotes)
+        public async Task<bool> ReviewRequestAsync(string id, string status)
         {
             using var connection = CreateConnection();
             var sql = @"UPDATE LeaveRequests SET status = @Status WHERE id = @Id";

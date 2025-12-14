@@ -18,8 +18,25 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
         public async Task<IEnumerable<Models.OvertimeRequest>> GetAllAsync()
         {
             using var connection = CreateConnection();
-            var sql = "SELECT * FROM OverTimeRequests";
+            var sql = "SELECT TOP 100 * FROM OverTimeRequests ORDER BY requestDate DESC";
             return await connection.QueryAsync<Models.OvertimeRequest>(sql);
+        }
+
+        public async Task<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>> GetAllWithEmployeeAsync()
+        {
+            using var connection = CreateConnection();
+            var sql = @"SELECT TOP 100
+                ot.id,
+                ot.employeeId,
+                CONCAT(e.firstName, ' ', e.lastName) AS employeeName,
+                ot.requestDate,
+                ot.hours,
+                ot.reason,
+                ot.status
+            FROM OverTimeRequests ot
+            LEFT JOIN Employees e ON ot.employeeId = e.id
+            ORDER BY ot.requestDate DESC";
+            return await connection.QueryAsync<Models.DTOs.OvertimeRequestWithEmployeeDto>(sql);
         }
 
         public async Task<Models.OvertimeRequest?> GetByIdAsync(string id)
