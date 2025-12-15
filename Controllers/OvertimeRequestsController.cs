@@ -1,6 +1,7 @@
 using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.OvertimeRequests;
+using AttendanceSystemBackend.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,18 +14,28 @@ namespace AttendanceSystemBackend.Controllers
     public class OvertimeRequestsController : Controller
     {
         private readonly IOvertimeRequestsRepo _repo;
+        private readonly IUserAuthorizationService _authorizationService;
 
-        public OvertimeRequestsController(IOvertimeRequestsRepo repo)
+        public OvertimeRequestsController(IOvertimeRequestsRepo repo, IUserAuthorizationService authorizationService)
         {
             _repo = repo;
+            _authorizationService = authorizationService;
         }
 
-        // GET /api/v1/overtimerequests
+        // GET /api/v1/overtimerequests (Admin sees all)
         [HttpGet]
         public async Task<IActionResult> GetAllOvertimeRequests()
         {
             try
             {
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
+                {
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
+                }
+
                 var items = await _repo.GetAllWithEmployeeAsync();
                 var response = ApiResponse<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>>.SuccessResponse(
                     items,
@@ -35,6 +46,41 @@ namespace AttendanceSystemBackend.Controllers
             catch (Exception ex)
             {
                 var response = ApiResponse<IEnumerable<Models.DTOs.OvertimeRequestWithEmployeeDto>>.ErrorResponse(
+                    ex.Message,
+                    500
+                );
+                return StatusCode(500, response);
+            }
+        }
+
+        // GET /api/v1/overtimerequests/my/{id} (Employee sees own requests)
+        [HttpGet("my/{id}")]
+        public async Task<IActionResult> GetMyOvertimeRequests([FromRoute] string id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var errorResponse = ApiResponse<IEnumerable<Models.OvertimeRequest>>.ErrorResponse(
+                        "Not authorized",
+                        401
+                    );
+                    return Unauthorized(errorResponse);
+                }
+
+                var items = await _repo.GetByEmployeeIdAsync(id);
+                var response = ApiResponse<IEnumerable<Models.OvertimeRequest>>.SuccessResponse(
+                    items,
+                    "Your overtime requests retrieved successfully"
+                );
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = ApiResponse<IEnumerable<Models.OvertimeRequest>>.ErrorResponse(
                     ex.Message,
                     500
                 );
@@ -74,9 +120,9 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // POST /api/v1/overtimerequests
-        [HttpPost]
-        public async Task<IActionResult> AddOvertimeRequest([FromBody] OvertimeRequestCreateDto dto)
+        // POST /api/v1/overtimerequests/{id}
+        [HttpPost("{id}")]
+        public async Task<IActionResult> AddOvertimeRequest([FromRoute] string id, [FromBody] OvertimeRequestCreateDto dto)
         {
             try
             {
@@ -95,11 +141,11 @@ namespace AttendanceSystemBackend.Controllers
                 // Create overtime request with employee and status
                 var request = new Models.OvertimeRequest
                 {
-                    EmployeeId = userId,
+                    EmployeeId = id,
                     RequestDate = dto.RequestDate,
                     Hours = dto.Hours,
                     Reason = dto.Reason,
-                    Status = dto.Status ?? "Pending"
+                    Status = "Pending"
                 };
                 // Ensure pending by default
                 if (string.IsNullOrWhiteSpace(request.Status))
@@ -198,19 +244,11 @@ namespace AttendanceSystemBackend.Controllers
                     return NotFound(notFoundResponse);
                 }
 
-                if (request.EmployeeId != userId)
-                {
-                    var forbiddenResponse = ApiResponse<int>.ErrorResponse(
-                        "You can only delete your own requests",
-                        403
-                    );
-                    return StatusCode(403, forbiddenResponse);
-                }
 
                 var rows = await _repo.DeleteAsync(id);
                 var response = ApiResponse<int>.SuccessResponse(
                     rows,
-                    "Overtime request deleted successfully"
+                    "Overtime request canceled successfully"
                 );
                 return Ok(response);
             }

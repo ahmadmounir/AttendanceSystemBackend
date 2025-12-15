@@ -70,9 +70,9 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // GET /api/v1/leaverequests/my (Employee - own requests)
-        [HttpGet("my")]
-        public async Task<IActionResult> GetMyLeaveRequests()
+        // GET /api/v1/leaverequests/me/{id} (Employee - own requests)
+        [HttpGet("me/{id}")]
+        public async Task<IActionResult> GetMyLeaveRequests([FromRoute] string id)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
-                var items = await _leaveRequestsRepo.GetEmployeeRequestsAsync(userId);
+                var items = await _leaveRequestsRepo.GetEmployeeRequestsAsync(id);
                 var response = ApiResponse<IEnumerable<Models.LeaveRequest>>.SuccessResponse(
                     items,
                     "Leave requests retrieved successfully"
@@ -239,19 +239,10 @@ namespace AttendanceSystemBackend.Controllers
                     return NotFound(notFoundResponse);
                 }
 
-                if (request.EmployeeId != userId)
-                {
-                    var forbiddenResponse = ApiResponse<int>.ErrorResponse(
-                        "You can only delete your own requests",
-                        403
-                    );
-                    return StatusCode(403, forbiddenResponse);
-                }
-
                 if (request.Status != "Pending")
                 {
                     var errorResponse = ApiResponse<int>.ErrorResponse(
-                        "Only pending requests can be deleted",
+                        "Only pending requests can be canceled",
                         400
                     );
                     return BadRequest(errorResponse);
@@ -260,7 +251,7 @@ namespace AttendanceSystemBackend.Controllers
                 var rowsAffected = await _leaveRequestsRepo.DeleteAsync(id);
                 var response = ApiResponse<int>.SuccessResponse(
                     rowsAffected,
-                    "Leave request deleted successfully"
+                    "Leave request canceled successfully"
                 );
                 return Ok(response);
             }

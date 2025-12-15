@@ -255,7 +255,7 @@ namespace AttendanceSystemBackend.Controllers
         /// <returns>Success message</returns>
         /// <remarks>
         /// Deletion order:
-        /// 1. UserAccount (and cascading RefreshTokens, Notifications)
+        /// 1. UserAccount (and cascading RefreshTokens)
         /// 2. Employee (and cascading EmployeeShifts, Violations)
         /// 
         /// Note: AttendanceLogs, OvertimeRequests, LeaveRequests, and LeaveBalances

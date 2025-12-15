@@ -51,6 +51,7 @@ namespace AttendanceSystemBackend.Services.Auth
 
             var response = new LoginResponse
             {
+                EmployeeId = user.EmployeeId,
                 AccessToken = accessToken,
                 Username = user.Username,
                 Name = employeeName ?? "Unknown",

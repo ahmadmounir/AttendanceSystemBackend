@@ -153,15 +153,14 @@ CREATE TABLE [OvertimeRequests] (
   [requestDate] date,
   [hours] decimal,
   [reason] nvarchar(255),
-  [isApproved] nvarchar(255)
+  [status] nvarchar(255)
 )
 GO
 
 CREATE TABLE [LeaveTypes] (
   [id] nvarchar(255) PRIMARY KEY,
   [typeName] nvarchar(255) UNIQUE NOT NULL,
-  [isPaid] int DEFAULT (1),
-  [maxDaysPerYear] int
+  [isPaid] int DEFAULT (1)
 )
 GO
 
@@ -180,8 +179,7 @@ CREATE TABLE [LeaveBalances] (
   [id] nvarchar(255) PRIMARY KEY,
   [employeeId] nvarchar(255) NOT NULL,
   [leaveTypeId] nvarchar(255) NOT NULL,
-  [remainingDays] decimal DEFAULT (0),
-  [year] int
+  [remainingDays] decimal DEFAULT (0)
 )
 GO
 
@@ -223,19 +221,19 @@ GO
 ALTER TABLE [EmployeeShifts] ADD FOREIGN KEY ([shiftId]) REFERENCES [Shifts] ([id])
 GO
 
-ALTER TABLE [AttendanceLogs] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id])
+ALTER TABLE [AttendanceLogs] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
 GO
 
-ALTER TABLE [OvertimeRequests] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id])
+ALTER TABLE [OvertimeRequests] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
 GO
 
-ALTER TABLE [LeaveRequests] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id])
+ALTER TABLE [LeaveRequests] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [LeaveRequests] ADD FOREIGN KEY ([leaveTypeId]) REFERENCES [LeaveTypes] ([id])
 GO
 
-ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id])
+ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([employeeId]) REFERENCES [Employees] ([id]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [LeaveBalances] ADD FOREIGN KEY ([leaveTypeId]) REFERENCES [LeaveTypes] ([id])

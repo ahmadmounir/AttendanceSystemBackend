@@ -178,9 +178,21 @@ namespace AttendanceSystemBackend.Repositories.Auth
         public async Task<int> DeleteUserAccountByEmployeeIdAsync(string employeeId)
         {
             using var connection = CreateConnection();
-            var sql = "DELETE FROM UserAccounts WHERE employeeId = @EmployeeId";
-            var parameters = new { EmployeeId = employeeId };
-            return await connection.ExecuteAsync(sql, parameters);
+            
+            // First, get the user account to find the userId
+            var getUserSql = "SELECT id FROM UserAccounts WHERE employeeId = @EmployeeId";
+            var userId = await connection.QueryFirstOrDefaultAsync<string>(getUserSql, new { EmployeeId = employeeId });
+            
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // Delete all refresh tokens for this user first
+                var deleteTokensSql = "DELETE FROM RefreshTokens WHERE userId = @UserId";
+                await connection.ExecuteAsync(deleteTokensSql, new { UserId = userId });
+            }
+            
+            // Finally, delete the user account
+            var deleteUserSql = "DELETE FROM UserAccounts WHERE employeeId = @EmployeeId";
+            return await connection.ExecuteAsync(deleteUserSql, new { EmployeeId = employeeId });
         }
     }
 }

@@ -39,6 +39,14 @@ namespace AttendanceSystemBackend.Repositories.OvertimeRequests
             return await connection.QueryAsync<Models.DTOs.OvertimeRequestWithEmployeeDto>(sql);
         }
 
+        public async Task<IEnumerable<Models.OvertimeRequest>> GetByEmployeeIdAsync(string employeeId)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT * FROM OverTimeRequests WHERE employeeId = @EmployeeId ORDER BY requestDate DESC";
+            var parameters = new { EmployeeId = employeeId };
+            return await connection.QueryAsync<Models.OvertimeRequest>(sql, parameters);
+        }
+
         public async Task<Models.OvertimeRequest?> GetByIdAsync(string id)
         {
             using var connection = CreateConnection();

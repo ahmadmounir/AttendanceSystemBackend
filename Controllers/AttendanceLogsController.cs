@@ -26,13 +26,31 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
-                if (await _authorizationService.IsAdminAsync(User))
+                var (isAuthorized, errorMessage) = await _authorizationService.ValidateAdminAccessAsync(User);
+                if (!isAuthorized)
                 {
-                    var items = await _attendanceLogsRepo.GetAllWithEmployeeAsync();
-                    return Ok(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.SuccessResponse(
-                        items, "Attendance logs retrieved successfully"));
+                    var statusCode = errorMessage == "Not authorized" ? 401 : 403;
+                    return StatusCode(statusCode, ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.ErrorResponse(
+                        errorMessage ?? "Access denied", statusCode));
                 }
 
+                var items = await _attendanceLogsRepo.GetAllWithEmployeeAsync();
+                return Ok(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.SuccessResponse(
+                    items, "Attendance logs retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
+                    ex.Message, 500));
+            }
+        }
+
+        // GET /api/v1/attendancelogs/my (Employee sees own attendance logs)
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyAttendanceLogs()
+        {
+            try
+            {
                 var employeeId = await _authorizationService.GetCurrentEmployeeIdAsync(User);
                 if (string.IsNullOrEmpty(employeeId))
                 {
@@ -42,11 +60,11 @@ namespace AttendanceSystemBackend.Controllers
 
                 var userItems = await _attendanceLogsRepo.GetByEmployeeIdWithEmployeeAsync(employeeId);
                 return Ok(ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.SuccessResponse(
-                    userItems, "Attendance logs retrieved successfully"));
+                    userItems, "Your attendance logs retrieved successfully"));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<IEnumerable<Models.AttendanceLog>>.ErrorResponse(
+                return StatusCode(500, ApiResponse<IEnumerable<Models.DTOs.AttendanceLogWithEmployeeDto>>.ErrorResponse(
                     ex.Message, 500));
             }
         }
