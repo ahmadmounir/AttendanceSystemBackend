@@ -66,9 +66,9 @@ namespace AttendanceSystemBackend.Controllers
                     CreatedAt = DateTime.Now
                 };
 
-                var newId = await _notificationsRepo.AddAsync(notification);
-                return Ok(ApiResponse<int>.SuccessResponse(
-                    newId, "Notification created successfully"));
+                await _notificationsRepo.AddAsync(notification);
+                return Ok(ApiResponse<string>.SuccessResponse(
+                    notification.Id, "Notification created successfully"));
             }
             catch (Exception ex)
             {
@@ -77,9 +77,9 @@ namespace AttendanceSystemBackend.Controllers
             }
         }
 
-        // PUT /api/v1/notifications (Mark notification as read using token)
-        [HttpPut]
-        public async Task<IActionResult> MarkNotificationAsRead()
+        // PUT /api/v1/notifications/{id} (Mark notification as read using token)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> MarkNotificationAsRead([FromRoute] string id)
         {
             try
             {
@@ -90,14 +90,14 @@ namespace AttendanceSystemBackend.Controllers
                         "Employee not found", 404));
                 }
 
-                var notification = await _notificationsRepo.GetByEmployeeIdAsync(employeeId);
+                var notification = await _notificationsRepo.GetByIdAsync(id);
                 if (notification == null)
                 {
                     return NotFound(ApiResponse<string>.ErrorResponse(
                         "Notification not found", 404));
                 }
 
-                var result = await _notificationsRepo.MarkAsReadAsync(employeeId);
+                var result = await _notificationsRepo.MarkAsReadAsync(id);
                 if (result > 0)
                 {
                     return Ok(ApiResponse<string>.SuccessResponse(

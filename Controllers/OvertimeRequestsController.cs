@@ -2,6 +2,7 @@ using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.OvertimeRequests;
 using AttendanceSystemBackend.Services.Authorization;
+using AttendanceSystemBackend.Repositories.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,11 +16,16 @@ namespace AttendanceSystemBackend.Controllers
     {
         private readonly IOvertimeRequestsRepo _repo;
         private readonly IUserAuthorizationService _authorizationService;
+        private readonly INotificationsRepo _notificationsRepo;
 
-        public OvertimeRequestsController(IOvertimeRequestsRepo repo, IUserAuthorizationService authorizationService)
+        public OvertimeRequestsController(
+            IOvertimeRequestsRepo repo, 
+            IUserAuthorizationService authorizationService,
+            INotificationsRepo notificationsRepo)
         {
             _repo = repo;
             _authorizationService = authorizationService;
+            _notificationsRepo = notificationsRepo;
         }
 
         // GET /api/v1/overtimerequests (Admin sees all)
@@ -198,8 +204,35 @@ namespace AttendanceSystemBackend.Controllers
         {
             try
             {
+                var overtimeRequest = await _repo.GetByIdAsync(id);
+                if (overtimeRequest == null)
+                {
+                    var notFoundResponse = ApiResponse<Models.OvertimeRequest>.ErrorResponse(
+                        "Overtime request not found",
+                        404
+                    );
+                    return NotFound(notFoundResponse);
+                }
+
                 var rows = await _repo.UpdateApprovalStatusAsync(id, request.Status);
                 var updated = await _repo.GetByIdAsync(id);
+
+                // Create notification for employee
+                var notification = new Models.Notification
+                {
+                    Title = request.Status == "Approved" 
+                        ? "Overtime Request Approved ?" 
+                        : "Overtime Request Rejected ?",
+                    Description = request.Status == "Approved"
+                        ? $"Your overtime request for {overtimeRequest.Hours} hours on {overtimeRequest.RequestDate:MMM dd, yyyy} has been approved."
+                        : $"Your overtime request for {overtimeRequest.Hours} hours on {overtimeRequest.RequestDate:MMM dd, yyyy} has been rejected.",
+                    EmployeeId = overtimeRequest.EmployeeId,
+                    MarkedAsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                await _notificationsRepo.AddAsync(notification);
+
                 var response = ApiResponse<Models.OvertimeRequest>.SuccessResponse(
                     updated,
                     "Overtime request approval status updated"

@@ -23,17 +23,26 @@ namespace AttendanceSystemBackend.Repositories.Notifications
             return await connection.QueryAsync<Models.Notification>(sql, parameters);
         }
 
-       
+        public async Task<Models.Notification?> GetByIdAsync(string id)
+        {
+            using var connection = CreateConnection();
+            var sql = "SELECT * FROM Notifications WHERE id = @Id";
+            var parameters = new { Id = id };
+            return await connection.QuerySingleOrDefaultAsync<Models.Notification>(sql, parameters);
+        }
+
         public async Task<int> AddAsync(Models.Notification notification)
         {
             using var connection = CreateConnection();
 
-            var sql = @"INSERT INTO Notifications (title, descr, employeeId, markedAsRead, createdAt)
-                VALUES (@Title, @Description, @EmployeeId, @MarkedAsRead, @CreatedAt);
-                SELECT CAST(SCOPE_IDENTITY() as int)";
+            var newId = Guid.NewGuid().ToString();
+
+            var sql = @"INSERT INTO Notifications (id, title, descr, employeeId, markedAsRead, createdAt)
+                VALUES (@Id, @Title, @Description, @EmployeeId, @MarkedAsRead, @CreatedAt)";
 
             var parameters = new
             {
+                Id = newId,
                 Title = notification.Title,
                 Description = notification.Description,
                 EmployeeId = notification.EmployeeId,
@@ -41,10 +50,12 @@ namespace AttendanceSystemBackend.Repositories.Notifications
                 CreatedAt = notification.CreatedAt
             };
 
-            return await connection.QuerySingleAsync<int>(sql, parameters);
+            await connection.ExecuteAsync(sql, parameters);
+            notification.Id = newId;
+            return 1;
         }
 
-                public async Task<int> MarkAsReadAsync(string id)
+        public async Task<int> MarkAsReadAsync(string id)
         {
             using var connection = CreateConnection();
 

@@ -4,6 +4,8 @@ namespace AttendanceSystemBackend.Repositories.Notifications
     {
         Task<IEnumerable<Models.Notification>> GetByEmployeeIdAsync(string employeeId);
         
+        Task<Models.Notification?> GetByIdAsync(string id);
+
         Task<int> AddAsync(Models.Notification notification);
         Task<int> MarkAsReadAsync(string id);
     }

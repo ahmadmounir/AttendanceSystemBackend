@@ -2,6 +2,7 @@ using AttendanceSystemBackend.Models;
 using AttendanceSystemBackend.Models.DTOs;
 using AttendanceSystemBackend.Repositories.LeaveRequests;
 using AttendanceSystemBackend.Services.LeaveRequests;
+using AttendanceSystemBackend.Repositories.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,13 +16,16 @@ namespace AttendanceSystemBackend.Controllers
     {
         private readonly ILeaveRequestsRepo _leaveRequestsRepo;
         private readonly ILeaveRequestService _leaveRequestService;
+        private readonly INotificationsRepo _notificationsRepo;
 
         public LeaveRequestsController(
             ILeaveRequestsRepo leaveRequestsRepo,
-            ILeaveRequestService leaveRequestService)
+            ILeaveRequestService leaveRequestService,
+            INotificationsRepo notificationsRepo)
         {
             _leaveRequestsRepo = leaveRequestsRepo;
             _leaveRequestService = leaveRequestService;
+            _notificationsRepo = notificationsRepo;
         }
 
         // GET /api/v1/leaverequests (Admin only - all requests)
@@ -190,10 +194,34 @@ namespace AttendanceSystemBackend.Controllers
                     return Unauthorized(errorResponse);
                 }
 
+                var request = await _leaveRequestsRepo.GetByIdAsync(id);
+                if (request == null)
+                {
+                    var notFoundResponse = ApiResponse<bool>.ErrorResponse(
+                        "Leave request not found",
+                        404
+                    );
+                    return NotFound(notFoundResponse);
+                }
+
                 var success = await _leaveRequestService.ReviewLeaveRequestAsync(id, dto);
                 var message = dto.Status == "Approved" 
                     ? "Leave request approved successfully" 
                     : "Leave request rejected successfully";
+
+                // Create notification for employee
+                var notification = new Models.Notification
+                {
+                    Title = message,
+                    Description = dto.Status == "Approved"
+                        ? $"Your leave request from {request.StartDate:MMM dd, yyyy} to {request.EndDate:MMM dd, yyyy} has been approved."
+                        : $"Your leave request from {request.StartDate:MMM dd, yyyy} to {request.EndDate:MMM dd, yyyy} has been rejected.",
+                    EmployeeId = request.EmployeeId,
+                    MarkedAsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                await _notificationsRepo.AddAsync(notification);
 
                 var response = ApiResponse<bool>.SuccessResponse(
                     success,
