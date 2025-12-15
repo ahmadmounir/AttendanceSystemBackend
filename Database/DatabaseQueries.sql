@@ -333,3 +333,16 @@ INSERT INTO [ViolationTypes] ([id], [typeName], [description]) VALUES
 (NEWID(), 'Missed Clock-In/Out', 'Failure to record attendance (check-in or check-out) on the system.'),
 (NEWID(), 'Extended Break', 'Exceeding the allowed duration for lunch or rest breaks.'),
 (NEWID(), 'Policy Violation', 'General violation of company internal policies or code of conduct.');
+
+
+CREATE TABLE Notifications (
+    id VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    descr VARCHAR(MAX),
+    employeeId nvarchar(255) NOT NULL,
+    markedAsRead bit DEFAULT 0,
+    createdAt datetime,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE Notifications ADD FOREIGN KEY (employeeId) REFERENCES Employees(id) ON DELETE CASCADE;
