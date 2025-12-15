@@ -12,6 +12,7 @@ using AttendanceSystemBackend.Repositories.Shifts;
 using AttendanceSystemBackend.Repositories.EmployeeShifts;
 using AttendanceSystemBackend.Repositories.OvertimeRequests;
 using AttendanceSystemBackend.Repositories.JobTitles;
+using AttendanceSystemBackend.Repositories.Notifications;
 using AttendanceSystemBackend.Services.Auth;
 using AttendanceSystemBackend.Services.LeaveRequests;
 using AttendanceSystemBackend.Services.Authorization;
@@ -77,6 +78,7 @@ builder.Services.AddScoped<IShiftsRepo, ShiftsRepo>();
 builder.Services.AddScoped<IEmployeeShiftsRepo, EmployeeShiftsRepo>();
 builder.Services.AddScoped<IOvertimeRequestsRepo, OvertimeRequestsRepo>();
 builder.Services.AddScoped<IAttendanceLogsRepo, AttendanceLogsRepo>();
+builder.Services.AddScoped<INotificationsRepo, NotificationsRepo>();
 
 // Configure CORS to allow requests from frontend ports 3000-3003
 builder.Services.AddCors(options =>
