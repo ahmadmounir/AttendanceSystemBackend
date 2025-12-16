@@ -96,33 +96,6 @@ namespace AttendanceSystemBackend.Repositories.LeaveRequests
             return newId.ToString();
         }
 
-        public async Task<Models.LeaveRequest> UpdateAsync(string id, Models.LeaveRequest leaveRequest)
-        {
-            using var connection = CreateConnection();
-            var sql = @"UPDATE LeaveRequests SET 
-                employeeId = @EmployeeId,
-                leaveTypeId = @LeaveTypeId,
-                startDate = @StartDate,
-                endDate = @EndDate,
-                reason = @Reason,
-                status = @Status
-                WHERE id = @Id";
-
-            var parameters = new
-            {
-                Id = id,
-                EmployeeId = leaveRequest.EmployeeId,
-                LeaveTypeId = leaveRequest.LeaveTypeId,
-                StartDate = leaveRequest.StartDate,
-                EndDate = leaveRequest.EndDate,
-                Reason = leaveRequest.Reason,
-                Status = leaveRequest.Status
-            };
-
-            await connection.ExecuteAsync(sql, parameters);
-            return leaveRequest;
-        }
-
         public async Task<bool> ReviewRequestAsync(string id, string status)
         {
             using var connection = CreateConnection();
