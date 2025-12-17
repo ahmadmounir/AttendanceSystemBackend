@@ -60,7 +60,7 @@ namespace AttendanceSystemBackend.Controllers
                 var notification = new Models.Notification
                 {
                     Title = request.Title,
-                    Description = request.Description,
+                    Descr = request.Description,
                     EmployeeId = employeeId,
                     MarkedAsRead = false,
                     CreatedAt = DateTime.Now

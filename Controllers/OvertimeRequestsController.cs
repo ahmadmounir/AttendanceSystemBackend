@@ -223,7 +223,7 @@ namespace AttendanceSystemBackend.Controllers
                     Title = request.Status == "Approved" 
                         ? "Overtime Request Approved ?" 
                         : "Overtime Request Rejected ?",
-                    Description = request.Status == "Approved"
+                    Descr = request.Status == "Approved"
                         ? $"Your overtime request for {overtimeRequest.Hours} hours on {overtimeRequest.RequestDate:MMM dd, yyyy} has been approved."
                         : $"Your overtime request for {overtimeRequest.Hours} hours on {overtimeRequest.RequestDate:MMM dd, yyyy} has been rejected.",
                     EmployeeId = overtimeRequest.EmployeeId,

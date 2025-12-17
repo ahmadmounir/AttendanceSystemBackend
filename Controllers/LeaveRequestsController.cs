@@ -213,7 +213,7 @@ namespace AttendanceSystemBackend.Controllers
                 var notification = new Models.Notification
                 {
                     Title = message,
-                    Description = dto.Status == "Approved"
+                    Descr = dto.Status == "Approved"
                         ? $"Your leave request from {request.StartDate:MMM dd, yyyy} to {request.EndDate:MMM dd, yyyy} has been approved."
                         : $"Your leave request from {request.StartDate:MMM dd, yyyy} to {request.EndDate:MMM dd, yyyy} has been rejected.",
                     EmployeeId = request.EmployeeId,

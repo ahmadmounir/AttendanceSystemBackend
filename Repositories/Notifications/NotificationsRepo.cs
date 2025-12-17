@@ -44,7 +44,7 @@ namespace AttendanceSystemBackend.Repositories.Notifications
             {
                 Id = newId,
                 Title = notification.Title,
-                Description = notification.Description,
+                Description = notification.Descr,
                 EmployeeId = notification.EmployeeId,
                 MarkedAsRead = notification.MarkedAsRead,
                 CreatedAt = notification.CreatedAt
