@@ -611,10 +611,7 @@ INSERT INTO [Employees] (
 INSERT INTO [UserRoles] ([id], [roleName]) VALUES 
 
 ('amjifdf2vdfpgm23in2', 'admin'), 
-
-(NEWID(), 'Employee'),
-
-(NEWID(), 'HR User');
+(NEWID(), 'member'),
 
 GO
 
